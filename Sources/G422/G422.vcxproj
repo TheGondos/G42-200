@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{4DFF2183-0E1D-46E0-94E8-A0752B820350}</ProjectGuid>
+    <RootNamespace>G422</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\..\resources\Orbiter.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\..\resources\Orbiter.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ModuleDir)\</OutDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ModuleDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;UCSO_API.lib;legacy_stdio_definitions.lib;OrbiterSoundSDK40.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;UCSO_API.lib;legacy_stdio_definitions.lib;OrbiterSoundSDK40.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Library\EasyBMP\EasyBMP.h" />
+    <ClInclude Include="Library\EasyBMP\EasyBMP_BMP.h" />
+    <ClInclude Include="Library\EasyBMP\EasyBMP_DataStructures.h" />
+    <ClInclude Include="Library\EasyBMP\EasyBMP_VariousBMPutilities.h" />
+    <ClInclude Include="Header\G422.h" />
+    <ClInclude Include="Header\G422_DVC.h" />
+    <ClInclude Include="Header\G422_MDL_DVC.h" />
+    <ClInclude Include="Header\G422_MDL_EXT.h" />
+    <ClInclude Include="Header\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Library\EasyBMP\EasyBMP.cpp" />
+    <ClCompile Include="Source\G422_ANIMATIONS.cpp" />
+    <ClCompile Include="Source\G422_AUX.cpp" />
+    <ClCompile Include="Source\G422_DVC_DISPLAYS.cpp" />
+    <ClCompile Include="Source\G422_DVC_SETUP.cpp" />
+    <ClCompile Include="Source\G422_ENG_APUSYS.cpp" />
+    <ClCompile Include="Source\G422_ENG_RAMCASTER.cpp" />
+    <ClCompile Include="Source\G422_ENG_RT66.cpp" />
+    <ClCompile Include="Source\G422_OAPI.cpp" />
+    <ClCompile Include="Source\G422_SCENARIO_RW.cpp" />
+    <ClCompile Include="Source\G422_SIM_CONTROLS.cpp" />
+    <ClCompile Include="Source\G422_SIM_DYNAMICS.cpp" />
+    <ClCompile Include="Source\G422_SYS_SIM_CUES.cpp" />
+    <ClCompile Include="Source\G422_VSL_SETUP.cpp" />
+    <ClCompile Include="Source\G422_VSL_UPDATE.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource\G422.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
