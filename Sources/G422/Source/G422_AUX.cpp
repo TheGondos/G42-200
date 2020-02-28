@@ -1,6 +1,19 @@
 #include "..\Header\G422.h"
 #include "..\Header\G422_DVC.h"
 
+MovingPart::MovingPart(UINT idx, double rt, MP_STATE st, double stPos, G422* vslRef, int sID)
+{
+	anim_idx = idx;
+	pos = stPos;
+	rate = rt;
+	mp_status = st;
+	sysID = sID;
+	vsl = vslRef;
+	sysReset = true;
+
+	if (vsl) vsl->SetAnimation(idx, stPos);
+}
+
 int MovingPart::toggle()
 {
 	if (mp_status == MP_REVERSING || mp_status == MP_LOW_DETENT)
@@ -19,7 +32,7 @@ int MovingPart::toggle()
 	return mp_status;
 }
 
-int MovingPart::toggle(bool b)
+void MovingPart::toggle(bool b)
 {
 	if (b && (mp_status == MP_REVERSING || mp_status == MP_LOW_DETENT))
 	{
@@ -33,10 +46,7 @@ int MovingPart::toggle(bool b)
 		sysReset = false;
 		vsl->clbkGeneric(VMSG_MPSTRT, sysID, this);
 	}
-
-	return mp_status;
 }
-
 
 void MovingPart::toDetent(int p)
 {
@@ -57,7 +67,6 @@ void MovingPart::toDetent(int p)
 	vsl->clbkGeneric(VMSG_MPSTRT, sysID, this);
 }
 
-
 bool MovingPart::getToggleState()
 {
 	if ((mp_status == MP_REVERSING || mp_status == MP_LOW_DETENT)) return false;
@@ -75,7 +84,7 @@ bool VCSwitch::flick(bool upDn, VESSEL4* vslRef) // true = "up" | false = "down"
 	case SW2_DOWN:
 		if (upDn)
 		{
-			vslRef->SetAnimation(anID, 1.0);
+			vslRef->SetAnimation(anID, 1);
 			pos = SW2_UP;
 			return true;
 		}
@@ -83,7 +92,7 @@ bool VCSwitch::flick(bool upDn, VESSEL4* vslRef) // true = "up" | false = "down"
 	case SW2_UP:
 		if (!upDn)
 		{
-			vslRef->SetAnimation(anID, 0.0);
+			vslRef->SetAnimation(anID, 0);
 			pos = SW2_DOWN;
 			return true;
 		}
@@ -99,13 +108,13 @@ bool VCSwitch::flick(bool upDn, VESSEL4* vslRef) // true = "up" | false = "down"
 	case SW3_MID:
 		if (upDn)
 		{
-			vslRef->SetAnimation(anID, 1.0);
+			vslRef->SetAnimation(anID, 1);
 			pos = SW3_UP;
 			return true;
 		}
 		else
 		{
-			vslRef->SetAnimation(anID, 0.0);
+			vslRef->SetAnimation(anID, 0);
 			pos = SW3_DOWN;
 			return true;
 		}
@@ -132,16 +141,22 @@ void VCSwitch::setPos(VCSwitchState newPos, VESSEL4* vslRef)
 	{
 	case SW2_UP:
 	case SW3_UP:
-		vslRef->SetAnimation(anID, 1.0);
+		vslRef->SetAnimation(anID, 1);
 		return;
 	case SW3_MID:
 		vslRef->SetAnimation(anID, 0.5);
 		return;
 	case SW2_DOWN:
 	case SW3_DOWN:
-		vslRef->SetAnimation(anID, 0.0);
+		vslRef->SetAnimation(anID, 0);
 		return;
 	}
+}
+
+void G422::setSwMid(int mgid)
+{
+	PlayVesselWave(SFXID, SFX_VC_AFLIK);
+	VCSwitches[VC_swIndexByMGID[mgid]].setPos(SW3_MID, this);
 }
 
 //  not sure where else to put these....
@@ -152,7 +167,7 @@ bool VCKnob::flick(bool upDn, VESSEL4* vslRef) // true = "up" | false = "down"
 	case KB2_DOWN:
 		if (upDn)
 		{
-			vslRef->SetAnimation(anID, 1.0);
+			vslRef->SetAnimation(anID, 1);
 			pos = KB2_UP;
 			return true;
 		}
@@ -160,7 +175,7 @@ bool VCKnob::flick(bool upDn, VESSEL4* vslRef) // true = "up" | false = "down"
 	case KB2_UP:
 		if (!upDn)
 		{
-			vslRef->SetAnimation(anID, 0.0);
+			vslRef->SetAnimation(anID, 0);
 			pos = KB2_DOWN;
 			return true;
 		}
@@ -176,13 +191,13 @@ bool VCKnob::flick(bool upDn, VESSEL4* vslRef) // true = "up" | false = "down"
 	case KB3_MID:
 		if (upDn)
 		{
-			vslRef->SetAnimation(anID, 1.0);
+			vslRef->SetAnimation(anID, 1);
 			pos = KB3_UP;
 			return true;
 		}
 		else
 		{
-			vslRef->SetAnimation(anID, 0.0);
+			vslRef->SetAnimation(anID, 0);
 			pos = KB3_DOWN;
 			return true;
 		}
@@ -209,14 +224,14 @@ void VCKnob::setPos(VCKnobState newPos, VESSEL4* vslRef)
 	{
 	case KB2_UP:
 	case KB3_UP:
-		vslRef->SetAnimation(anID, 1.0);
+		vslRef->SetAnimation(anID, 1);
 		return;
 	case KB3_MID:
 		vslRef->SetAnimation(anID, middleState);
 		return;
 	case KB2_DOWN:
 	case KB3_DOWN:
-		vslRef->SetAnimation(anID, 0.0);
+		vslRef->SetAnimation(anID, 0);
 		return;
 	}
 }

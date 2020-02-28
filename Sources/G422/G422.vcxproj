@@ -86,13 +86,14 @@
     <ClCompile Include="Source\G422_DVC_DISPLAYS.cpp" />
     <ClCompile Include="Source\G422_DVC_SETUP.cpp" />
     <ClCompile Include="Source\G422_ENG_APUSYS.cpp" />
+    <ClCompile Include="Source\G422_ENG_OMS.cpp" />
     <ClCompile Include="Source\G422_ENG_RAMCASTER.cpp" />
     <ClCompile Include="Source\G422_ENG_RT66.cpp" />
     <ClCompile Include="Source\G422_OAPI.cpp" />
     <ClCompile Include="Source\G422_SCENARIO_RW.cpp" />
     <ClCompile Include="Source\G422_SIM_CONTROLS.cpp" />
     <ClCompile Include="Source\G422_SIM_DYNAMICS.cpp" />
-    <ClCompile Include="Source\G422_SYS_SIM_CUES.cpp" />
+    <ClCompile Include="Source\G422_ENG_RCS.cpp" />
     <ClCompile Include="Source\G422_VSL_SETUP.cpp" />
     <ClCompile Include="Source\G422_VSL_UPDATE.cpp" />
   </ItemGroup>

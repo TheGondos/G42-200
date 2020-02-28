@@ -4,6 +4,7 @@
 -- Bugfix for importing groups with missing texture 	  --
 -- mapping information by Tschachim					            --
 -- FLAG and D support + Macro interface by Moach
+-- Header file generation by Abdullah Radwan
 ----------------------------------------------------------
 -- Version History:
 -- v1.0 Initial version 
@@ -73,36 +74,34 @@
 --    * Bugfix: fixed some minor bugs on import of meshfiles that use tabs for 
 --      separation of numbers instead of spaces
 -----------------------------------------------------------------------------
-MacroScript ExportOrbiterMesh category:"MOACH_OrbiterMesh" buttonText:"Export Orbiter *.MSH"
+
+function myGetCorrespTVert iMeshVert iFace CurMesh =
 (
-	function myGetCorrespTVert iMeshVert iFace CurMesh =
-	(
-		MeshFace = getFace CurMesh iFace
-		TVFace = getTVFace CurMesh iFace
-		if MeshFace.x == iMeshVert then
-			return TVFace.x
-		else if MeshFace.y == iMeshVert then 
-			return TVFace.y
-		else 
-			return TVFace.z
-	)
+	MeshFace = getFace CurMesh iFace
+	TVFace = getTVFace CurMesh iFace
+	if MeshFace.x == iMeshVert then
+		return TVFace.x
+	else if MeshFace.y == iMeshVert then 
+		return TVFace.y
+	else 
+		return TVFace.z
+)
 
-	function RotatePoint90X pntPoint iDir =
+function RotatePoint90X pntPoint iDir =
+(
+	pntRet = [pntPoint.x,0,0]
+	if(iDir == 2) then
 	(
-		pntRet = [pntPoint.x,0,0]
-		if(iDir == 2) then
-		(
-			pntRet.y = pntPoint.z;
-			pntRet.z = -pntPoint.y
-		)
-		else
-		(
-			pntRet.y = -pntPoint.z;
-			pntRet.z = pntPoint.y
-		)
-		return pntRet
+		pntRet.y = pntPoint.z;
+		pntRet.z = -pntPoint.y
 	)
-
+	else
+	(
+		pntRet.y = -pntPoint.z;
+		pntRet.z = pntPoint.y
+	)
+	return pntRet
+)
 
 function MeshExport bRotateX90 iFileOut genHeader = 
 (
@@ -111,16 +110,26 @@ function MeshExport bRotateX90 iFileOut genHeader =
 	if(iFileOut == 1) then 
 	(
 		strFileName = getSaveFileName caption:"Save Orbiter Mesh File" types:"Orbiter Mesh File *.msh|*.msh"
+		
 		if strFileName == undefined then 
 			return "Aborted"
 
 		fsMeshFile = CreateFile strFileName
 		if fsMeshFile == undefined then 
 			return "Error ! Could not create file."
+		
+		if(genHeader) then
+		(
+			strHeaderName = trimRight strFileName ".msh"
+			strHeaderName += ".h"
+			fsHeaderFile = CreateFile strHeaderName
+			if fsHeaderFile == undefined then 
+				return "Error ! Could not create file."
+		)
 	)
 	else
 		fsMeshFile = StringStream "" 
-
+	
 	-- if we use a stringstream to dump the data to the output window
 	-- we generate a little spacer to make it more clearly where the actual file begins
 	if isKindOf fsMeshFile StringStream then
@@ -135,19 +144,10 @@ function MeshExport bRotateX90 iFileOut genHeader =
 	arrTranspNames = #()
 	arrObjects = #()
 	
-	
-	-- let us write a c++ header file for use in advanced modules, shall we?
-	if genHeader then
-	(
-		
-	)
-	
 	-- copy the scene object array, because in some cases (multiple groups) 
 	-- it is temporarily mixed up later when the snapshots are taken
 	for iObIndex = 1 to selection.count do
-	(
 		arrObjects[iObIndex] = selection[iObIndex]
-	)
 	-- now copy all objects to an internal array and convert them to 
 	-- Editable_Mesh for exporting
 	for iObIndex = 1 to arrObjects.count do
@@ -158,16 +158,10 @@ function MeshExport bRotateX90 iFileOut genHeader =
 		(
 			print ("Skipping " + arrObjects[iObIndex].name + " ! Not convertable to Editable_Mesh.")
 			if AktObject != undefined then 
-			(
-				delete AktObject
-				
-				
-			)
+				delete AktObject	
 		)
 		else 
 		(
-			
-			
 			if isGroupMember AktObject then 
 				setGroupMember AktObject false
 			
@@ -190,6 +184,32 @@ function MeshExport bRotateX90 iFileOut genHeader =
 
 	join arrMeshes arrTranspMeshes
 	join arrNames arrTranspNames
+	
+	-- let us write a c++ header file for use in advanced modules
+	if genHeader then
+	(
+		if (iFileOut == 1) then 
+			MGP_ID_list = "// Generated from " + filenameFromPath strFileName + "\n"
+		else 
+			MGP_ID_list = "\n\nStart meshgroup listing\n"
+		
+		for iAktMesh = 1 to arrMeshes.count do
+		(
+			mgp_name = arrNames[iAktMesh]
+			MGP_ID_list += ("\n#define "+"MGID_"+(filterString mgp_name " ,;:|-[]()*+!/\\~{}?&#.")[1]+ " "+(iAktMesh-1) as string)
+		)
+		
+		if (iFileOut == 1) then
+		(
+			format MGP_ID_list to:fsHeaderFile
+			close fsHeaderFile
+		)
+		else
+		(
+			MGP_ID_list += "\n\nEnd meshgroup listing\n\n"
+			print (MGP_ID_list)
+		)
+	)
 
 	-- output GROUPS tag with number of meshes
 	format "GROUPS %\n" arrMeshes.count to:fsMeshFile
@@ -207,15 +227,6 @@ function MeshExport bRotateX90 iFileOut genHeader =
 			if findItem arrTextures strTextureFile == 0 then append arrTextures strTextureFile
 		)
 	)
-	
-	MGP_ID_list = "\n\nStart meshgroup listing\n"
-	for iAktMesh = 1 to arrMeshes.count do
-	(
-		mgp_name = arrNames[iAktMesh]
-		MGP_ID_list += ("\n#define "+"MGID_"+(filterString mgp_name " ,;:|-[]()*+!/\\~{}?&#.")[1]+ " "+(iAktMesh-1) as string)
-	)
-	print(MGP_ID_list + "\n\nEnd meshgroup listing\n\n")
-	
 	
 	for iAktMesh = 1 to arrMeshes.count do
 	(
@@ -511,8 +522,10 @@ function MeshExport bRotateX90 iFileOut genHeader =
 	-- output the whole mesh file to the console window for copying
 	-- comment this out if createFile works
 	print "Done generating data."
-	if(iFileOut == 1) then close fsMeshFile
-	else if(iFileOut == 2) then
+
+	if (iFileOut == 1) then
+		close fsMeshFile
+	else
 	(
 		if (getKBChar prompt:"Press <Space> to start dump now or <Esc> to abort...") == " " then
 			print fsMeshFile 
@@ -520,25 +533,6 @@ function MeshExport bRotateX90 iFileOut genHeader =
 	)
 )
 
-
-	rollout max2msh "Export *.msh file" 
-	( 
-		checkbox cbXRot "Rotate mesh -90° around X" checked:true
-		radiobuttons rbFileOut labels:#("Output to File", "Dump to Listener") 
-			default:1
-		button export "Start Export ..."
-		checkbox cbGenHdr "Generate header file" checked:true
-		on export pressed do 
-			MeshExport cbXRot.checked rbFileOut.state cbGenHdr.checked
-
-	)
-	createDialog max2msh 170 142
-)
-
-MacroScript ImportOrbiterMesh category:"MOACH_OrbiterMesh" buttonText:"Import Orbiter *.MSH"
-(
-	
-	
 function MeshImport bRotateX90 =
 (
 	struct SMeshGroup (meshobj, iMat, iTex)
@@ -847,17 +841,23 @@ function MeshImport bRotateX90 =
 		print "Done"
 	)
 )
-
-	rollout msh2max "Import *.msh file"
-	(
-		checkbox cbXRot "Rotate mesh 90° around X" checked:true
-		button import "Start Import ..."
-
-		on import pressed do 
-			MeshImport cbXRot.checked
-		
-	)
-	createDialog max2msh 170 142
+	
+utility OrbiterMesh "Export *.msh file" 
+( 
+	checkbox cbXRot "Rotate mesh -90° around X" checked:true
+	radiobuttons rbFileOut labels:#("Output to File", "Dump to Listener") 
+		default:1
+	button export "Start Export ..."
+	checkbox cbGenHdr "Generate header file" checked:true
+	on export pressed do 
+		MeshExport cbXRot.checked rbFileOut.state cbGenHdr.checked
 )
 
+utility OrbiterMesh "Import *.msh file"
+(
+	checkbox cbXRot "Rotate mesh 90° around X" checked:true
+	button import "Start Import ..."
 
+	on import pressed do 
+		MeshImport cbXRot.checked
+)

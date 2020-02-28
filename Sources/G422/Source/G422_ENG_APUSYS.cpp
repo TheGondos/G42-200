@@ -1,5 +1,6 @@
 #include "..\Header\G422.h"
 #include "..\Header\G422_MDL_DVC.h"
+#include "..\Header\G422_DVC.h"
 
 void G422::cueEngines(APU& eng, APU::SIMSTATE sst)
 {
@@ -32,43 +33,55 @@ void G422::cueEngines(APU& eng, APU::SIMSTATE sst)
 
 void G422::simEngines(double& dT, APU& eng)
 {
+	double fuelLvl = GetPropellantMass(fuel_sys);
+
+	if (eng.feed & APU::FUEL_PUMP && (fuelLvl < 0.001 || !(eng.feed & APU::FUEL_OPEN)))
+		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (VC_swIndexByMGID[MGID_SW2_SYSFEED_APU] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+	
 	if (eng.state == APU::ENG_INOP) return;
 
 	if (eng.feed & APU::FUEL_PUMP) // simulate fuel line pressure from pumps
 	{
-		if (eng.fuelPrs < 1.0)
+		if (eng.fuelPrs < 1)
 		{
-			double deltaPrs = .22 * dT;
-			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1.0);
+			double deltaPrs = 0.22 * dT;
+			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1);
 		}
 	}
 	else
 	{
-		if (eng.fuelPrs > 0.0)
+		if (eng.fuelPrs > 0)
 		{
-			double deltaPrs = -.12 * (1.0 - eng.pwrPct * .5) * dT;
-			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0.0);
+			double deltaPrs = -0.12 * (1 - eng.pwrPct * .5) * dT;
+			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0);
 		}
-	}
+	} 
 
-	double fuelLvl = GetPropellantMass(fuel_sys);
+	if (fuelLvl < 0.001) eng.fuelPrs = 0;
 
-	if (fuelLvl < .001)
-	{
-		eng.fuelPrs = 0.0;
-		return cueEngines(eng, APU::ENG_STOP);
-	}
-
+	if (eng.state != APU::ENG_STOP && eng.fuelPrs == 0) return cueEngines(eng, APU::ENG_STOP);
+	
 	switch (eng.state)
 	{
 	case APU::ENG_RUN:
 	{
-		if (eng.fuelPrs == 0) return cueEngines(eng, APU::ENG_STOP);
-
 		eng.fuelFlow = APU_FUEL_RATE;
 		eng.exhaustTemp = 527;
+		
+		if (eng.hydFeed != APU::HYD_OFF)
+		{
+			if (eng.hydSys->hydFlow < 2.86)
+			{
+				eng.hydSys->hydFlow = min(eng.hydSys->hydFlow + (2.86 * 0.28 * dT), 2.86);
+				eng.hydSys->hydPrs = eng.hydSys->hydFlow * 1050;
+			}
+		}
+		else if (eng.hydSys->hydFlow > 0)
+		{
+			eng.hydSys->hydFlow = max(eng.hydSys->hydFlow - (2.86 * 0.12 * dT), 0);
+			eng.hydSys->hydPrs = eng.hydSys->hydFlow * 1050;
+		}
 
-		// ?? whatever apu does... (just noise for now...)
 		double usedFuel = APU_FUEL_RATE * dT;
 		eng.usedFuel += usedFuel;
 		SetPropellantMass(fuel_sys, fuelLvl - usedFuel);
@@ -79,8 +92,6 @@ void G422::simEngines(double& dT, APU& eng)
 	}
 	case APU::ENG_START:
 	{
-		if (eng.fuelPrs == 0) return cueEngines(eng, APU::ENG_STOP);
-
 		eng.pwrPct += 0.28 * dT;
 		eng.fuelFlow = APU_FUEL_RATE * eng.pwrPct;
 		eng.exhaustTemp = 527 * eng.pwrPct;
@@ -89,44 +100,29 @@ void G422::simEngines(double& dT, APU& eng)
 		eng.usedFuel += usedFuel;
 		SetPropellantMass(fuel_sys, fuelLvl - usedFuel);
 
-		if (eng.pwrPct >= 1.0)
-		{
-			eng.pwrPct = 1.0;
-			cueEngines(apu, APU::ENG_RUN);
-
-			switch (VCKnobs[VC_kbIndexByMGID[MGID_ACS_KNOB]].pos)
-			{
-			case KB3_UP:
-				SetADCtrlMode(7);
-				break;
-			case KB3_MID:
-				SetADCtrlMode(1);
-				break;
-			case KB3_DOWN:
-				SetADCtrlMode(0);
-				break;
-			}
-		}
+		if (eng.pwrPct >= 1) { eng.pwrPct = 1; cueEngines(eng, APU::ENG_RUN); }
 		return;
 	}
 	case APU::ENG_STOP:
 	{
-		if (GetADCtrlMode() != 0) SetADCtrlMode(0);
-
 		eng.pwrPct -= 0.12 * dT;
-		eng.fuelFlow = APU_FUEL_RATE * eng.pwrPct;
+		eng.fuelFlow = 0;
 		eng.exhaustTemp = 527 * eng.pwrPct;
 
-		double usedFuel = eng.fuelFlow * dT;
-		eng.usedFuel += usedFuel;
-		SetPropellantMass(fuel_sys, fuelLvl - usedFuel);
-
-		if (eng.pwrPct <= 0.0)
+		if (eng.hydSys->hydFlow > 0)
 		{
-			eng.pwrPct = 0.0;
+			eng.hydSys->hydFlow = min(2.86 * eng.pwrPct, eng.hydSys->hydFlow);
+			eng.hydSys->hydPrs = eng.hydSys->hydFlow * 1050;
+		}
+
+		if (eng.pwrPct <= 0)
+		{
+			eng.pwrPct = 0;
 			eng.fuelFlow = 0;
 			eng.exhaustTemp = 0;
-			cueEngines(apu, APU::ENG_INOP);
+			eng.hydSys->hydFlow = 0;
+			eng.hydSys->hydPrs = 0;
+			cueEngines(eng, APU::ENG_INOP);
 		}
 		return;
 	}

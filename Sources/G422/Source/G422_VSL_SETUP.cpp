@@ -11,11 +11,6 @@ G422::G422(OBJHANDLE vsl_hndl, int fltModel) : VESSEL4 (vsl_hndl, fltModel)
 {
 	ucso = UCSO::Vessel::CreateInstance(this);
 
-	cargoIndex = -1;
-	slotIndex = -1;
-	fuelIndex = -1;
-	displayCargoInfo = false;
-
 	const char* ucsoVersion = ucso->GetUCSOVersion();
 
 	if (ucsoVersion)
@@ -25,48 +20,9 @@ G422::G422(OBJHANDLE vsl_hndl, int fltModel) : VESSEL4 (vsl_hndl, fltModel)
 		ucsoInstalled = true;
 	}
 	else { message = "Error: UCSO isn't installed"; ucsoInstalled = false; }
-	
-	timer = 0;
 
-	allSystemsReset = true;
-	
-	thrPos = 0.0;
-	cgShiftRef = 0.0;
-	VC_PoV_station = 0;
-	burner_toggle  = 0;
-	ramcaster_mode = 0;
-	wingPos = 0;
-	main_eng_mode = 0;
-	thr_authority = 0;
-	main_ign_sqnc = 1;
-	prk_brake_mode = false;
-	rcsMode = false;
-	
-	vcRdwT = 0.0;
-	
-	thrFX_X = 0.0;
-	thrFX_Y = 0.0;
-	
-	fx_exhaustLvl  = 0.0;
-	fx_contrailLvl = 0.0;
-	
-	memset(&nav_green, 0, sizeof(BEACONLIGHTSPEC)*8);
-	memset(&engMain_L, 0, sizeof(RT66));
-	memset(&engMain_R, 0, sizeof(RT66));
-	memset(&engRamx,   0, sizeof(RAMCASTER));
-	memset(&apu,       0, sizeof(APU));
-	memset(&rcoms, 0, sizeof(RCOMS));
-	
-	engMain_L.state = engMain_R.feed = RT66::SST_INOP;
-	engRamx.state = RAMCASTER::ENG_INOP;
-	apu.state = APU::ENG_INOP;
-	rcoms.state = RCOMS::SYS_INOP;
-	
-	engMain_L.feed = RT66::FUEL_OPEN;
-	engMain_R.feed = RT66::FUEL_OPEN; // fuel lines always open 'til coding gets to that
-	apu.feed       = APU::FUEL_OPEN;
-	engRamx.feed   = RAMCASTER::FUEL_OPEN;
-	rcoms.feed = RCOMS::FUEL_RC_OPEN | RCOMS::FUEL_OM_OPEN;
+	apuPackA.hydSys = &hydSysA;
+	apuPackB.hydSys = &hydSysB;
 	
 	VC_eicas_screens[0] = -1;
 	VC_eicas_screens[1] = -1;
@@ -74,8 +30,6 @@ G422::G422(OBJHANDLE vsl_hndl, int fltModel) : VESSEL4 (vsl_hndl, fltModel)
 	VC_eicas_screens[3] = -1;
 	VC_eicas_screens[4] = -1;
 	VC_eicas_screens[5] = -1;
-	
-	drawEicas = (1 << 5) | (1 << 7);
 	
 	if (!vslCount)
 	{
@@ -180,14 +134,14 @@ void G422::clbkSetClassCaps(FILEHANDLE cfg)
 	{
 		 V3_LGT_NAV_GREEN, V3_LGT_NAV_RED, V3_LGT_STROBE_L, V3_LGT_STROBE_R, V3_LGT_STROBE_T, V3_LGT_BCN_1, V3_LGT_BCN_2
 	};
-	static VECTOR3 nav_lgts_col[3] = {{0.5, 1.0, 0.5}, {1.0, 0.5, 0.5}, {1.0, 1.0, 1.0}};
+	static VECTOR3 nav_lgts_col[3] = {{0.5, 1, 0.5}, {1, 0.5, 0.5}, {1, 1, 1}};
 	
 	nav_green.shape = BEACONSHAPE_DIFFUSE;     nav_red.shape = BEACONSHAPE_DIFFUSE;  nav_white.shape = BEACONSHAPE_DIFFUSE;
 	nav_green.pos = nav_lgts_pos;			   nav_red.pos = nav_lgts_pos+1;		  nav_white.pos =  nav_lgts_pos+4;
 	nav_green.col = nav_lgts_col;			   nav_red.col = nav_lgts_col+1;		  nav_white.col =  nav_lgts_col+2;
 	nav_green.size = .25;					   nav_red.size = .25;					  nav_white.size = .25;
 	nav_green.falloff = .2;				       nav_red.falloff = .2;				  nav_white.falloff = .2;
-	nav_green.period = 0.0;				       nav_red.period = 0.0;				  nav_white.period = 0.0;	
+	nav_green.period = 0;				       nav_red.period = 0;				  nav_white.period = 0;	
 	nav_green.active = false;				   nav_red.active = false;				  nav_white.active = false;
 	AddBeacon(&nav_green);					   AddBeacon(&nav_red);					  AddBeacon(&nav_white);
 	
@@ -196,9 +150,9 @@ void G422::clbkSetClassCaps(FILEHANDLE cfg)
 	stb_l.col = nav_lgts_col+2;			   	stb_r.col = nav_lgts_col+2;			 stb_t.col = nav_lgts_col+2;
 	stb_l.size = 0.5;					   	stb_r.size = 0.5;					 stb_t.size = 0.5;
 	stb_l.falloff = .6;                   	stb_r.falloff = .6;			    	 stb_t.falloff = .6;
-	stb_l.period = 1.0;                    	stb_r.period = 1.0;					 stb_t.period = 1.0;
+	stb_l.period = 1;                    	stb_r.period = 1;					 stb_t.period = 1;
 	stb_l.duration = .05;				   	stb_r.duration = .05;				 stb_t.duration = .05;
-	stb_l.tofs = 0.0;                      	stb_r.tofs = 0.0;					 stb_t.tofs = 0.2;
+	stb_l.tofs = 0;                      	stb_r.tofs = 0;					 stb_t.tofs = 0.2;
 	stb_l.active = false;					stb_r.active = false;				 stb_t.active = false;
 	AddBeacon(&stb_l);						AddBeacon(&stb_r);					 AddBeacon(&stb_t);
 
@@ -209,32 +163,46 @@ void G422::clbkSetClassCaps(FILEHANDLE cfg)
 	bcn1.falloff = .2;				  bcn2.falloff = .2;
 	bcn1.period = 1.5;				  bcn2.period = 1.5;
 	bcn1.duration = .2;				  bcn2.duration = .2;
-	bcn1.tofs = 0.5;				  bcn2.tofs = 1.0;
+	bcn1.tofs = 0.5;				  bcn2.tofs = 1;
 	bcn1.active = false;			  bcn2.active = false;
 	AddBeacon(&bcn1);				  AddBeacon(&bcn2);
+
+	double tilt = -10.0 * RAD; double tiltY = sin(tilt); double tiltZ = cos(tilt);
+
+	landingLight = static_cast<SpotLight*>(AddSpotLight(_V(0, 1.5, 39.81), _V(0, tiltY, tiltZ),
+		5000, 1e-3, 1e-5, 2e-7, RAD * 25, RAD * 40, { 1,1,1,0 }, { 1,1,1,0 }, { 0,0,0,0 }));
+	landingLight->Activate(false);
+
+	taxiLight = static_cast<SpotLight*>(AddSpotLight(_V(0, 1.5, 39.81), _V(0, tiltY, tiltZ),
+		150, 1e-3, 0, 1e-4, RAD * 25, RAD * 40, { 1,1,1,0 }, { 1,1,1,0 }, { 0,0,0,0 }));
+	taxiLight->Activate(false);
+
+	dockingLight = static_cast<SpotLight*>(AddSpotLight(_V(-0.553, 2.77473, 32.0663), _V(0, 1, 0),
+		150, 1e-3, 0, 1e-3, RAD * 30, RAD * 60, { 1,1,1,0 }, { 1,1,1,0 }, { 0,0,0,0 }));
+	dockingLight->Activate(false);
 	
 	static PARTICLESTREAMSPEC fx_contrail_long = 
 	{
-		0, 1.0, .85, 120, 0.05, 30.0, 8, 3.0, PARTICLESTREAMSPEC::EMISSIVE,
-		PARTICLESTREAMSPEC::LVL_LIN, 0.0, 1.0,
-		PARTICLESTREAMSPEC::ATM_FLAT, 1.0, 1.0, NULL
+		0, 1, .85, 120, 0.05, 30.0, 8, 3.0, PARTICLESTREAMSPEC::EMISSIVE,
+		PARTICLESTREAMSPEC::LVL_LIN, 0, 1,
+		PARTICLESTREAMSPEC::ATM_FLAT, 1, 1, NULL
 	};
 	
 	static PARTICLESTREAMSPEC fx_jetgas_burn = 
 	{
-		0, 1.0, .85, 120, 0.05, 2.5, 8, 3.0, PARTICLESTREAMSPEC::DIFFUSE,
-		PARTICLESTREAMSPEC::LVL_LIN, 0.0, 1.0,
-		PARTICLESTREAMSPEC::ATM_FLAT, 1.0, 1.0, NULL
+		0, 1, .85, 120, 0.05, 2.5, 8, 3.0, PARTICLESTREAMSPEC::DIFFUSE,
+		PARTICLESTREAMSPEC::LVL_LIN, 0, 1,
+		PARTICLESTREAMSPEC::ATM_FLAT, 1, 1, NULL
 	};
 
-	fuel_main_allTanks = CreatePropellantResource(MAXFUEL_MAIN_ALL, MAXFUEL_MAIN_ALL, 1);
-	fuel_oxy = CreatePropellantResource(MAXFUEL_OXY, MAXFUEL_OXY, 1);
-	fuel_sys = CreatePropellantResource(MAXFUEL_SYS, MAXFUEL_SYS, 1);
+	fuel_main_allTanks = CreatePropellantResource(MAXFUEL_MAIN_ALL);
+	fuel_oxy = CreatePropellantResource(MAXFUEL_OXY);
+	fuel_sys = CreatePropellantResource(MAXFUEL_SYS);
 	
-	dummyFuel = CreatePropellantResource(1,1,1);
-	dummyThruster     = CreateThruster(_V(0,0,0), _V(0,0,1), 0, dummyFuel, 1, 1, 1);
-	dummyThrAirbrakes = CreateThruster(_V(0,0,0), _V(0,0,1), 0, dummyFuel, 1, 1, 1);
-	dummyHover        = CreateThruster(_V(0,0,0), _V(0,0,1), 0, dummyFuel, 1, 1, 1);
+	dummyFuel = CreatePropellantResource(1);
+	dummyThruster     = CreateThruster(_V0, _Z, 0, dummyFuel, 1, 1, 1);
+	dummyThrAirbrakes = CreateThruster(_V0, _Z, 0, dummyFuel, 1, 1, 1);
+	dummyHover        = CreateThruster(_V0, _Z, 0, dummyFuel, 1, 1, 1);
 
 	controller_thgr = CreateThrusterGroup(&dummyThruster, 1, THGROUP_MAIN); // this will serve to read the inputs from the throttle
 
@@ -242,51 +210,51 @@ void G422::clbkSetClassCaps(FILEHANDLE cfg)
 	CreateThrusterGroup(&dummyHover, 1,	THGROUP_HOVER);
 	
 	// main engines!
-	RT66_gasGen_thgr[0] = engMain_L.th_gasGen =  CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_MAIN_GEN, fuel_main_allTanks);
-	RT66_gasGen_thgr[1] = engMain_R.th_gasGen =  CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_MAIN_GEN, fuel_main_allTanks);
+	RT66_gasGen_thgr[0] = engMain_L.th_gasGen =  CreateThruster(_V0, _Z, MAXTHRUST_MAIN_GEN, fuel_main_allTanks);
+	RT66_gasGen_thgr[1] = engMain_R.th_gasGen =  CreateThruster(_V0, _Z, MAXTHRUST_MAIN_GEN, fuel_main_allTanks);
 	
-	RT66_burner_thgr[0] = engMain_L.th_burner =  CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_MAIN_AFB, fuel_main_allTanks);
-	RT66_burner_thgr[1] = engMain_R.th_burner =  CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_MAIN_AFB, fuel_main_allTanks);
+	RT66_burner_thgr[0] = engMain_L.th_burner =  CreateThruster(_V0, _Z, MAXTHRUST_MAIN_AFB, fuel_main_allTanks);
+	RT66_burner_thgr[1] = engMain_R.th_burner =  CreateThruster(_V0, _Z, MAXTHRUST_MAIN_AFB, fuel_main_allTanks);
 	
-	SetEngineLevel(ENGINE_MAIN, 0.0);
-	thrPos = 0.0;
+	SetEngineLevel(ENGINE_MAIN, 0);
+	thrPos = 0;
 
-	AddExhaust(RT66_burner_thgr[0], 15, 1.5, V3_EXHAUST_MAIN_L, _V(0,0,-1), exhaustTex[0]);
-	AddExhaust(RT66_burner_thgr[1], 15, 1.5, V3_EXHAUST_MAIN_R, _V(0,0,-1), exhaustTex[0]);
+	AddExhaust(RT66_burner_thgr[0], 15, 1.5, V3_EXHAUST_MAIN_L, _Zn, exhaustTex[0]);
+	AddExhaust(RT66_burner_thgr[1], 15, 1.5, V3_EXHAUST_MAIN_R, _Zn, exhaustTex[0]);
 
 	// rocket mode!
-	RT66_rocket_thgr[0] = engMain_L.th_rocket =  CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_MAIN_RKT, fuel_main_allTanks, ISPMAX_MAIN_RKT, ISPMIN_MAIN_RKT);
-	RT66_rocket_thgr[1] = engMain_R.th_rocket =  CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_MAIN_RKT, fuel_main_allTanks, ISPMAX_MAIN_RKT, ISPMIN_MAIN_RKT);
-	AddExhaust(RT66_rocket_thgr[0], 18, 1.2, V3_EXHAUST_MAIN_L, _V(0,0,-1), exhaustTex[2]);
-	AddExhaust(RT66_rocket_thgr[1], 18, 1.2, V3_EXHAUST_MAIN_R, _V(0,0,-1), exhaustTex[2]);
+	RT66_rocket_thgr[0] = engMain_L.th_rocket =  CreateThruster(_V0, _Z, MAXTHRUST_MAIN_RKT, fuel_main_allTanks, ISPMAX_MAIN_RKT, ISPMIN_MAIN_RKT);
+	RT66_rocket_thgr[1] = engMain_R.th_rocket =  CreateThruster(_V0, _Z, MAXTHRUST_MAIN_RKT, fuel_main_allTanks, ISPMAX_MAIN_RKT, ISPMIN_MAIN_RKT);
+	AddExhaust(RT66_rocket_thgr[0], 18, 1.2, V3_EXHAUST_MAIN_L, _Zn, exhaustTex[2]);
+	AddExhaust(RT66_rocket_thgr[1], 18, 1.2, V3_EXHAUST_MAIN_R, _Zn, exhaustTex[2]);
 	CreateThrusterGroup(RT66_rocket_thgr, 2, THGROUP_USER);
 	
 	// ramcaster!
-	ramcaster = engRamx.th_ramx = CreateThruster(_V(0,0,0), _V(0,0,1), 1, fuel_main_allTanks);
+	ramcaster = engRamx.th_ramx = CreateThruster(_V0, _Z, 1, fuel_main_allTanks);
 	
-	AddExhaust(ramcaster, 16, 1.5, V3_RAMX_EXHAUST_001, _V(0,0,-1), exhaustTex[1]);
-	AddExhaust(ramcaster, 18, 1.6, V3_RAMX_EXHAUST_002, _V(0,0,-1), exhaustTex[1]);
-	AddExhaust(ramcaster, 16, 1.5, V3_RAMX_EXHAUST_003, _V(0,0,-1), exhaustTex[1]);
-	AddExhaust(ramcaster, 15, 1.4, V3_RAMX_EXHAUST_004, _V(0,0,-1), exhaustTex[1]);
-	AddExhaust(ramcaster, 15, 1.4, V3_RAMX_EXHAUST_005, _V(0,0,-1), exhaustTex[1]);
+	AddExhaust(ramcaster, 16, 1.5, V3_RAMX_EXHAUST_001, _Zn, exhaustTex[1]);
+	AddExhaust(ramcaster, 18, 1.6, V3_RAMX_EXHAUST_002, _Zn, exhaustTex[1]);
+	AddExhaust(ramcaster, 16, 1.5, V3_RAMX_EXHAUST_003, _Zn, exhaustTex[1]);
+	AddExhaust(ramcaster, 15, 1.4, V3_RAMX_EXHAUST_004, _Zn, exhaustTex[1]);
+	AddExhaust(ramcaster, 15, 1.4, V3_RAMX_EXHAUST_005, _Zn, exhaustTex[1]);
 	
 	// OMS!
-	oms_thgr[0] = CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_OMS, fuel_sys, ISPMAX_OMS,  ISPMIN_OMS);
-	oms_thgr[1] = CreateThruster(_V(0,0,0), _V(0,0,1), MAXTHRUST_OMS, fuel_sys, ISPMAX_OMS,  ISPMIN_OMS);
-	AddExhaust(oms_thgr[0], 10, .6, V3_EXHAUST_OMS_L, _V(0,0,-1), exhaustTex[3]);
-	AddExhaust(oms_thgr[1], 10, .6, V3_EXHAUST_OMS_R, _V(0,0,-1), exhaustTex[3]);
+	oms_thgr[0] = CreateThruster(_V0, _Z, MAXTHRUST_OMS, fuel_sys, ISPMAX_OMS,  ISPMIN_OMS);
+	oms_thgr[1] = CreateThruster(_V0, _Z, MAXTHRUST_OMS, fuel_sys, ISPMAX_OMS,  ISPMIN_OMS);
+	AddExhaust(oms_thgr[0], 10, .6, V3_EXHAUST_OMS_L, _Zn, exhaustTex[3]);
+	AddExhaust(oms_thgr[1], 10, .6, V3_EXHAUST_OMS_R, _Zn, exhaustTex[3]);
 		
-	wingLift = CreateAirfoil3 (LIFT_VERTICAL, _V(0,0,0), VLiftCoeff, 0, 32, 850, 2.1);
+	wingLift = CreateAirfoil3 (LIFT_VERTICAL, _V0, VLiftCoeff, 0, 32, 850, 2.1);
 
 	CreateAirfoil3 (LIFT_HORIZONTAL, _V(0,0,-22), HLiftCoeff, 0, 12, 180, 2.2);
 
-	CreateControlSurface3 (AIRCTRL_ELEVATOR,     4.0, 1.5, _V(0,0,-25.0), AIRCTRL_AXIS_AUTO);
-	CreateControlSurface3 (AIRCTRL_ELEVATORTRIM, 4.0, 1.5, _V(0,0,-25.0), AIRCTRL_AXIS_AUTO);
+	CreateControlSurface (AIRCTRL_ELEVATOR,     4.0, 1.5, _V(0,0,-25.0), AIRCTRL_AXIS_AUTO);
+	CreateControlSurface (AIRCTRL_ELEVATORTRIM, 4.0, 1.5, _V(0,0,-25.0), AIRCTRL_AXIS_AUTO);
 
-	CreateControlSurface3 (AIRCTRL_AILERON, 4.0, 1.5, _V( 22.5,0,-25), AIRCTRL_AXIS_AUTO);
-	CreateControlSurface3 (AIRCTRL_AILERON, 4.0, 1.5, _V(-22.5,0,-25), AIRCTRL_AXIS_AUTO);
+	CreateControlSurface (AIRCTRL_AILERON, 4.0, 1.5, _V( 22.5,0,-25), AIRCTRL_AXIS_AUTO);
+	CreateControlSurface (AIRCTRL_AILERON, 4.0, 1.5, _V(-22.5,0,-25), AIRCTRL_AXIS_AUTO);
 	
-	CreateControlSurface3 (AIRCTRL_RUDDER, 4.5, 1.5,  _V(   0,0,-30.0), AIRCTRL_AXIS_AUTO);
+	CreateControlSurface (AIRCTRL_RUDDER, 4.5, 1.5,  _V(   0,0,-30.0), AIRCTRL_AXIS_AUTO);
 	
 	// and now, the RCS thrusters
 	th_rcs_pitchUp[0] = th_rcs_vertUp[0]   = CreateThruster (_V(0,0, 40), _V(0,  1,0), MAXTRHUST_RCS, fuel_sys, ISPMAX_RCS); // raise bow 
@@ -295,33 +263,33 @@ void G422::clbkSetClassCaps(FILEHANDLE cfg)
 	th_rcs_pitchDn[0] = th_rcs_vertDown[0] = CreateThruster (_V(0,0, 40), _V(0, -1,0), MAXTRHUST_RCS, fuel_sys, ISPMAX_RCS); // drop bow
 	th_rcs_pitchDn[1] = th_rcs_vertUp[1]   = CreateThruster (_V(0,0,-40), _V(0,  1,0), MAXTRHUST_RCS, fuel_sys, ISPMAX_RCS); // raise stern
 
-	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_1, _V(-.1,-1,0), rcsTex); // raise bow
-	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_2, _V(-.1,-1,0), rcsTex);
-	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_3, _V(-.1,-1,0), rcsTex);
+	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_1, _V(-0.1,-1,0), rcsTex); // raise bow
+	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_2, _V(-0.1,-1,0), rcsTex);
+	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_3, _V(-0.1,-1,0), rcsTex);
 	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_4, _V( .1,-1,0), rcsTex);
 	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_5, _V( .1,-1,0), rcsTex);
 	AddExhaust (th_rcs_pitchUp[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_DN_6, _V( .1,-1,0), rcsTex);
 	
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_1, _V(0,1,0), rcsTex); // drop stern
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_2, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_3, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_4, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_5, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_6, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_7, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_8, _V(0,1,0), rcsTex);
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_1, _Y, rcsTex); // drop stern
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_2, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_3, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_4, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_5, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_6, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_7, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchUp[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_UP_8, _Y, rcsTex);
 	
-	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_1, _V(-.1,-1,0), rcsTex); // raise stern
-	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_2, _V(-.1,-1,0), rcsTex);
-	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_3, _V(-.1,-1,0), rcsTex);
+	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_1, _V(-0.1,-1,0), rcsTex); // raise stern
+	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_2, _V(-0.1,-1,0), rcsTex);
+	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_3, _V(-0.1,-1,0), rcsTex);
 	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_4, _V( .1,-1,0), rcsTex);
 	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_5, _V( .1,-1,0), rcsTex);
 	AddExhaust (th_rcs_pitchDn[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_DN_6, _V( .1,-1,0), rcsTex);
 	
-	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_1, _V(0,1,0), rcsTex); // drop bow
-	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_2, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_3, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_4, _V(0,1,0), rcsTex);
+	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_1, _Y, rcsTex); // drop bow
+	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_2, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_3, _Y, rcsTex);
+	AddExhaust (th_rcs_pitchDn[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_UP_4, _Y, rcsTex);
 	
 	th_rcs_yawLeft[0]  = th_rcs_horLeft[0]  = CreateThruster (_V(0,0, 40), _V(-1, 0,0), MAXTRHUST_RCS * .75, fuel_sys, ISPMAX_RCS);  // bow left
 	th_rcs_yawLeft[1]  = th_rcs_horRight[1] = CreateThruster (_V(0,0,-40), _V( 1, 0,0), MAXTRHUST_RCS * .75, fuel_sys, ISPMAX_RCS);  // stern right
@@ -329,38 +297,38 @@ void G422::clbkSetClassCaps(FILEHANDLE cfg)
 	th_rcs_yawRight[0] = th_rcs_horRight[0] = CreateThruster (_V(0,0, 40), _V( 1, 0,0), MAXTRHUST_RCS * .75, fuel_sys, ISPMAX_RCS);  // bow right
 	th_rcs_yawRight[1] = th_rcs_horLeft[1]  = CreateThruster (_V(0,0,-40), _V(-1, 0,0), MAXTRHUST_RCS * .75, fuel_sys, ISPMAX_RCS);  // stern left
 	
-	AddExhaust (th_rcs_yawLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_RT_1, _V(1,0,0), rcsTex); // bow left
-	AddExhaust (th_rcs_yawLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_RT_2, _V(1,0,0), rcsTex);
-	AddExhaust (th_rcs_yawLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_RT_3, _V(1,0,0), rcsTex);
+	AddExhaust (th_rcs_yawLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_RT_1, _X, rcsTex); // bow left
+	AddExhaust (th_rcs_yawLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_RT_2, _X, rcsTex);
+	AddExhaust (th_rcs_yawLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_RT_3, _X, rcsTex);
 	
-	AddExhaust (th_rcs_yawLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_LF_1, _V(-1,0,0), rcsTex); // stern right
-	AddExhaust (th_rcs_yawLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_LF_2, _V(-1,0,0), rcsTex);
-	AddExhaust (th_rcs_yawLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_LF_3, _V(-1,0,0), rcsTex);
+	AddExhaust (th_rcs_yawLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_LF_1, _Xn, rcsTex); // stern right
+	AddExhaust (th_rcs_yawLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_LF_2, _Xn, rcsTex);
+	AddExhaust (th_rcs_yawLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_LF_3, _Xn, rcsTex);
 	
-	AddExhaust (th_rcs_yawRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_LF_1, _V(-1,0,0), rcsTex); // bow right
-	AddExhaust (th_rcs_yawRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_LF_2, _V(-1,0,0), rcsTex);
-	AddExhaust (th_rcs_yawRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_LF_3, _V(-1,0,0), rcsTex);
+	AddExhaust (th_rcs_yawRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_LF_1, _Xn, rcsTex); // bow right
+	AddExhaust (th_rcs_yawRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_LF_2, _Xn, rcsTex);
+	AddExhaust (th_rcs_yawRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSF_LF_3, _Xn, rcsTex);
 	
-	AddExhaust (th_rcs_yawRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_RT_1, _V(1,0,0), rcsTex); // stern left
-	AddExhaust (th_rcs_yawRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_RT_2, _V(1,0,0), rcsTex);
-	AddExhaust (th_rcs_yawRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_RT_3, _V(1,0,0), rcsTex);
+	AddExhaust (th_rcs_yawRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_RT_1, _X, rcsTex); // stern left
+	AddExhaust (th_rcs_yawRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_RT_2, _X, rcsTex);
+	AddExhaust (th_rcs_yawRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSA_RT_3, _X, rcsTex);
 	
-	th_rcs_fwd[0]  = CreateThruster (_V(0,0,0),  _V(0,0, 1), MAXTRHUST_RCS * 2.5, fuel_sys, ISPMAX_RCS); // fore-aft RCS is intentionally overpowered wrt the other sets...
-	th_rcs_back[0] = CreateThruster (_V(0,0,0),  _V(0,0,-1), MAXTRHUST_RCS * 2.5, fuel_sys, ISPMAX_RCS); // this is to make "braking" easier, since there aren't any beefy retro thrusters aboard
+	th_rcs_fwd[0]  = CreateThruster (_V0,  _V(0,0, 1), MAXTRHUST_RCS * 2.5, fuel_sys, ISPMAX_RCS); // fore-aft RCS is intentionally overpowered wrt the other sets...
+	th_rcs_back[0] = CreateThruster (_V0,  _Zn, MAXTRHUST_RCS * 2.5, fuel_sys, ISPMAX_RCS); // this is to make "braking" easier, since there aren't any beefy retro thrusters aboard
 
-	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_RFW_1, _V(0,0,1), rcsTex);
-	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_RFW_2, _V(0,0,1), rcsTex);
-	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_RFW_3, _V(0,0,1), rcsTex);
-	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_LFW_1, _V(0,0,1), rcsTex);
-	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_LFW_2, _V(0,0,1), rcsTex);
-	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_LFW_3, _V(0,0,1), rcsTex);
+	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_RFW_1, _Z, rcsTex);
+	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_RFW_2, _Z, rcsTex);
+	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_RFW_3, _Z, rcsTex);
+	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_LFW_1, _Z, rcsTex);
+	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_LFW_2, _Z, rcsTex);
+	AddExhaust (th_rcs_back[0], 2.75, 0.5, V3_RCSF_LFW_3, _Z, rcsTex);
 
-	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_1, _V(0,0,-1), rcsTex);
-	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_2, _V(0,0,-1), rcsTex);
-	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_3, _V(0,0,-1), rcsTex);
-	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_4, _V(0,0,-1), rcsTex);
-	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_5, _V(0,0,-1), rcsTex);
-	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_6, _V(0,0,-1), rcsTex);
+	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_1, _Zn, rcsTex);
+	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_2, _Zn, rcsTex);
+	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_3, _Zn, rcsTex);
+	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_4, _Zn, rcsTex);
+	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_5, _Zn, rcsTex);
+	AddExhaust (th_rcs_fwd[0], 2.75, 0.5, V3_RCSA_BK_6, _Zn, rcsTex);
 
 	th_rcs_bankRight[0] = CreateThruster (_V( 10,0,0), _V(0, -1, 0),  MAXTRHUST_RCS  * 2.0, fuel_sys, ISPMAX_RCS);   // drop port
 	th_rcs_bankRight[1] = CreateThruster (_V(-10,0,0), _V(0,  1, 0),  MAXTRHUST_RCS  * 2.0, fuel_sys, ISPMAX_RCS);   // raise starboard
@@ -368,31 +336,33 @@ void G422::clbkSetClassCaps(FILEHANDLE cfg)
 	th_rcs_bankLeft[0] = CreateThruster(_V(10, 0, 0), _V(0, 1, 0), MAXTRHUST_RCS * 2.0, fuel_sys, ISPMAX_RCS);   // raise port
 	th_rcs_bankLeft[1] = CreateThruster(_V(-10, 0, 0), _V(0, -1, 0), MAXTRHUST_RCS * 2.0, fuel_sys, ISPMAX_RCS);   // drop starboard
 
-	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_001, _V(0,1,0), rcsTex); // drop right
-	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_002, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_003, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_004, _V(0,1,0), rcsTex);
+	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_001, _Y, rcsTex); // drop right
+	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_002, _Y, rcsTex);
+	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_003, _Y, rcsTex);
+	AddExhaust (th_rcs_bankRight[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_UP_004, _Y, rcsTex);
 
-	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_001, _V(0,-1,0), rcsTex); // raise left
-	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_002, _V(0,-1,0), rcsTex);
-	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_003, _V(0,-1,0), rcsTex);
-	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_004, _V(0,-1,0), rcsTex);
+	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_001, _Yn, rcsTex); // raise left
+	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_002, _Yn, rcsTex);
+	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_003, _Yn, rcsTex);
+	AddExhaust (th_rcs_bankRight[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_DN_004, _Yn, rcsTex);
 	
-	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_001, _V(0,-1,0), rcsTex); // raise right
-	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_002, _V(0,-1,0), rcsTex);
-	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_003, _V(0,-1,0), rcsTex);
-	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_004, _V(0,-1,0), rcsTex);
+	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_001, _Yn, rcsTex); // raise right
+	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_002, _Yn, rcsTex);
+	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_003, _Yn, rcsTex);
+	AddExhaust (th_rcs_bankLeft[0], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSR_DN_004, _Yn, rcsTex);
 				
-	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_001, _V(0,1,0), rcsTex); // drop left
-	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_002, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_003, _V(0,1,0), rcsTex);
-	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_004, _V(0,1,0), rcsTex);
+	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_001, _Y, rcsTex); // drop left
+	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_002, _Y, rcsTex);
+	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_003, _Y, rcsTex);
+	AddExhaust (th_rcs_bankLeft[1], RCS_FX_LSCALE, RCS_FX_WSCALE, V3_RCSL_UP_004, _Y, rcsTex);
 
 	setupAnimations();
 }
 
 void G422::clbkPostCreation()
 {
+	if (GetADCtrlMode() != 0 && hydSysA.hydPrs < 2800 && hydSysB.hydPrs < 2800) SetADCtrlMode(0);
+
 	SFXID = ConnectToOrbiterSoundDLL(GetHandle());
 
 	SoundOptionOnOff(SFXID, PLAYMAINTHRUST, false);
@@ -403,10 +373,11 @@ void G422::clbkPostCreation()
 	ReplaceStockSound(SFXID, "Sound\\G422\\RCSfire.wav",    REPLACE_RCS_THRUST_ATTACK);
 	ReplaceStockSound(SFXID, "Sound\\G422\\RCSsustain.wav", REPLACE_RCS_THRUST_SUSTAIN);
 
-	RequestLoadVesselWave(SFXID, SFX_GEARS, "Sound\\G422\\gears.wav", INTERNAL_ONLY);
-	RequestLoadVesselWave(SFXID, SFX_CNRDS, "Sound\\G422\\canards.wav", INTERNAL_ONLY);
-	RequestLoadVesselWave(SFXID, SFX_VSRUP, "Sound\\G422\\visor_raise.wav", INTERNAL_ONLY);
-	RequestLoadVesselWave(SFXID, SFX_VSRDN, "Sound\\G422\\visor_lower.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_GEARS, "Sound\\G422\\gears.wav", BOTHVIEW_FADED_CLOSE);
+	RequestLoadVesselWave(SFXID, SFX_CNRDS, "Sound\\G422\\canards.wav", BOTHVIEW_FADED_CLOSE);
+	RequestLoadVesselWave(SFXID, SFX_VSRUP, "Sound\\G422\\visor_raise.wav", BOTHVIEW_FADED_CLOSE);
+	RequestLoadVesselWave(SFXID, SFX_VSRDN, "Sound\\G422\\visor_lower.wav", BOTHVIEW_FADED_CLOSE);
+	RequestLoadVesselWave(SFXID, SFX_RCS_DOORS, "XRSound\\Default\\Hydraulics1.wav", BOTHVIEW_FADED_CLOSE);
 	RequestLoadVesselWave(SFXID, SFX_BAY_DOORS, "XRSound\\Default\\Hydraulics1.wav", BOTHVIEW_FADED_CLOSE);
 
 	RequestLoadVesselWave(SFXID, SFX_FUELPUMP_MAIN, "Sound\\G422\\fuelpump_main.wav", INTERNAL_ONLY);
@@ -414,11 +385,11 @@ void G422::clbkPostCreation()
 	RequestLoadVesselWave(SFXID, SFX_FUELPUMP_APU, "Sound\\G422\\fuelpump_apu.wav", INTERNAL_ONLY);
 	RequestLoadVesselWave(SFXID, SFX_FUELPUMP_RAMX, "Sound\\G422\\fuelpump_ramx.wav", INTERNAL_ONLY);
 	RequestLoadVesselWave(SFXID, SFX_FUELPUMP_OMS, "Sound\\G422\\fuelpump_oms.wav", INTERNAL_ONLY);
-	RequestLoadVesselWave(SFXID, SFX_FUELPUMP_RCS, "Sound\\Vessel\\aircond.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_FUELPUMP_RCS, "Sound\\Vessel\\fuelpump_rcs.wav", INTERNAL_ONLY);
 
-	RequestLoadVesselWave(SFXID, SFX_APU_START, "Sound\\G422\\apu_start.wav", INTERNAL_ONLY);
-	RequestLoadVesselWave(SFXID, SFX_APU_RUN, "Sound\\G422\\apu_run.wav", INTERNAL_ONLY);
-	RequestLoadVesselWave(SFXID, SFX_APU_STOP, "Sound\\G422\\apu_stop.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_APU_START, "Sound\\G422\\apu_start.wav", BOTHVIEW_FADED_CLOSE);
+	RequestLoadVesselWave(SFXID, SFX_APU_RUN, "Sound\\G422\\apu_run.wav", BOTHVIEW_FADED_CLOSE);
+	RequestLoadVesselWave(SFXID, SFX_APU_STOP, "Sound\\G422\\apu_stop.wav", BOTHVIEW_FADED_CLOSE);
 
 	RequestLoadVesselWave(SFXID, SFX_VC_POP, "Sound\\G422\\cockpit\\pop.wav", INTERNAL_ONLY);
 	RequestLoadVesselWave(SFXID, SFX_VC_FLICK, "Sound\\G422\\cockpit\\flick.wav", INTERNAL_ONLY);
@@ -429,10 +400,10 @@ void G422::clbkPostCreation()
 	RequestLoadVesselWave(SFXID, SFX_VC_TICK, "Sound\\G422\\cockpit\\tick.wav", INTERNAL_ONLY);
 	RequestLoadVesselWave(SFXID, SFX_VC_SLACK, "Sound\\G422\\cockpit\\shclack.wav", INTERNAL_ONLY);
 
-	RequestLoadVesselWave(SFXID, SFX_WINGMTR, "Sound\\G422\\wing_motor.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WINGMTR, "Sound\\G422\\wing_motor.wav", BOTHVIEW_FADED_CLOSE);
 
-	RequestLoadVesselWave(SFXID, SFX_WIND_CLSD, "Sound\\G422\\wind_vsr_up.wav", INTERNAL_ONLY);
-	RequestLoadVesselWave(SFXID, SFX_WIND_OPEN, "Sound\\G422\\wind_vsr_down.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WIND_CLSD, "Sound\\G422\\wind_vsr_up.wav", BOTHVIEW_FADED_CLOSE);
+	RequestLoadVesselWave(SFXID, SFX_WIND_OPEN, "Sound\\G422\\wind_vsr_down.wav", BOTHVIEW_FADED_CLOSE);
 
 	RequestLoadVesselWave(SFXID, SFX_JETROAR, "Sound\\G422\\roar.wav", BOTHVIEW_FADED_FAR);
 	RequestLoadVesselWave(SFXID, SFX_RCTROAR, "Sound\\G422\\main_burn_rct.wav", BOTHVIEW_FADED_FAR);
@@ -463,11 +434,25 @@ void G422::clbkPostCreation()
 
 	RequestLoadVesselWave(SFXID, SFX_RCS_NORMAL, "XRSound\\Default\\RCS Config Normal.wav", INTERNAL_ONLY);
 	RequestLoadVesselWave(SFXID, SFX_RCS_DOCKING, "XRSound\\Default\\RCS Config Docking.wav", INTERNAL_ONLY);
+
+	RequestLoadVesselWave(SFXID, SFX_FUEL_DUMP, "XRSound\\Default\\Warning Fuel Dump.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_FUEL_FLOW, "XRSound\\Default\\Fuel Flow.wav", INTERNAL_ONLY);
+
+	RequestLoadVesselWave(SFXID, SFX_WARN_MAINLOW, "XRSound\\Default\\Warning Main Fuel Low.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WARN_OXYLOW, "XRSound\\Default\\Warning Oxygen Low.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WARN_ASFLOW, "XRSound\\Default\\Warning APU Fuel Low.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WARN_MAINDEP, "XRSound\\Default\\Warning Main Fuel Depleted.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WARN_OXYDEP, "XRSound\\Default\\Warning Oxygen Depleted.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WARN_ASFDEP, "XRSound\\Default\\Warning APU Fuel Depleted No Hydraulic Pressure.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_WARN_CTRLOFF, "XRSound\\Default\\Warning AF Ctrl Surfaces Off.wav", INTERNAL_ONLY);
+
+	RequestLoadVesselWave(SFXID, SFX_V1, "XRSound\\Default\\V1.wav", INTERNAL_ONLY);
+	RequestLoadVesselWave(SFXID, SFX_ROTATE, "XRSound\\Default\\Rotate.wav", INTERNAL_ONLY);
 	
 	oapiVCTriggerRedrawArea(-1, VC_AREA_MFDKEYS);
 	oapiVCTriggerRedrawArea(-1, VC_AREA_EICAS_ALL);
 
-	SetAnimation(an_dvc_wpos, wingTipFthr->getToggleState() ? 1.0 : wingTipWvrd->getToggleState() ? 0.0 : .5);
+	SetAnimation(an_dvc_wpos, wingTipFthr->getToggleState() ? 1 : wingTipWvrd->getToggleState() ? 0 : .5);
 	SetAnimation(an_dvc_prk, prk_brake_mode);
 
 	gearsPos = &landingGears->pos;
@@ -475,16 +460,12 @@ void G422::clbkPostCreation()
 	inltPos = &inltDoors->pos;
 	ramxPos = &ramxDoors->pos;
 
-	CreateVariableDragElement(gearsPos, 8.5, _V(0.0, -3.8, 0.0));
-	CreateVariableDragElement(canardsPos, 1.6, _V(0.0,  2.0, 35.0));
-	CreateVariableDragElement(inltPos, 3.0, _V(0.0,  -0.8, -2.0));
-	CreateVariableDragElement(ramxPos, 2.5, _V(0.0,  -2.2,  2.0));
+	CreateVariableDragElement(gearsPos,   8.5, _V(0, -3.8, 0));
+	CreateVariableDragElement(canardsPos, 1.6, _V(0,  2.0, 35.0));
+	CreateVariableDragElement(inltPos,    3.0, _V(0,  -0.8, -2.0));
+	CreateVariableDragElement(ramxPos,    2.5, _V(0,  -2.2,  2.0));
 
-	if (apu.state != APU::ENG_RUN) SetADCtrlMode(0);
-	
-	allSystemsReset = false;
-
-	ucso->SetSlotDoor(bayDoors->pos >= 1.0);
+	ucso->SetSlotDoor(bayDoors->pos == 1);
 }
 
 void G422::clbkVisualCreated(VISHANDLE vis, int refcount)

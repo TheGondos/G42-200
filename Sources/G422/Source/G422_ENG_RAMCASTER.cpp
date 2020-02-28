@@ -1,5 +1,6 @@
 #include "..\Header\G422.h"
-#include "..\Header\G422_MDL_EXT.h"
+#include "..\Header\G422_DVC.h"
+#include "..\Header\G422_MDL_DVC.h"
 
 void G422::cueEngines(RAMCASTER& eng, RAMCASTER::SIMSTATE sst)
 {
@@ -9,7 +10,7 @@ void G422::cueEngines(RAMCASTER& eng, RAMCASTER::SIMSTATE sst)
 	{
 	case RAMCASTER::ENG_START:
 		if (eng.state != RAMCASTER::ENG_INOP && eng.state != RAMCASTER::ENG_STOP) return; // don't even try
-		if (ramxDoors->pos < 1.0 || GetEngineLevel(ENGINE_HOVER) < .5) return; // doors closed or throttle too low...
+		if (ramxDoors->pos < 1 || GetEngineLevel(ENGINE_HOVER) < 0.5) return; // doors closed or throttle too low...
 
 		PlayVesselWave(SFXID, SFX_RAMCASTER_START);
 		cueEngines(eng, RAMCASTER::ENG_RUNLO); // set it off!
@@ -41,7 +42,7 @@ void G422::cueEngines(RAMCASTER& eng, RAMCASTER::SIMSTATE sst)
 		StopVesselWave(SFXID, SFX_ENGINERUN_RAMX_HI);
 
 		ramcaster_mode = 0;
-		SetThrusterLevel(eng.th_ramx, 0.0);
+		SetThrusterLevel(eng.th_ramx, 0);
 
 		break;
 
@@ -53,39 +54,43 @@ void G422::cueEngines(RAMCASTER& eng, RAMCASTER::SIMSTATE sst)
 
 void G422::simEngines(double& dT, RAMCASTER& eng)
 {
+	double fuelMass = GetPropellantMass(fuel_main_allTanks);
+
+	if (eng.feed & RAMCASTER::FUEL_PUMP && (fuelMass < 0.001 || !(eng.feed & RAMCASTER::FUEL_OPEN) || 
+		(apuPackA.pwrPct < 0.85 && apuPackB.pwrPct < 0.85)))
+		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (VC_swIndexByMGID[MGID_SW2_APU_RAMX] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+
 	if (eng.state == RAMCASTER::ENG_INOP) return; // no simulation needed
 
-	if (eng.feed & RAMCASTER::FUEL_PUMP && apu.pwrPct > .85) // simulate fuel line pressure from pumps
+	if (eng.feed & RAMCASTER::FUEL_PUMP) // simulate fuel line pressure from pumps
 	{
-		if (eng.fuelPrs < 1.0)
+		if (eng.fuelPrs < 1)
 		{
-			double deltaPrs = .22 * dT;
-			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1.0);
+			double deltaPrs = 0.22 * dT;
+			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1);
 		}
 	}
 	else
 	{
-		if (eng.fuelPrs > 0.0)
+		if (eng.fuelPrs > 0)
 		{
-			double deltaPrs = -.12 * (1.0 - eng.thr * .5) * dT;
-			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0.0);
+			double deltaPrs = -0.12 * (1 - eng.thr * 0.5) * dT;
+			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0);
 		}
 	}
 
-	if (GetPropellantMass(fuel_main_allTanks) < .001)
-	{
-		eng.fuelPrs = 0.0;
-		return cueEngines(eng, RAMCASTER::ENG_INOP);
-	}
-
+	if (fuelMass < 0.001) eng.fuelPrs = 0;
+	
+	if (eng.fuelPrs == 0) return cueEngines(eng, RAMCASTER::ENG_INOP); 
+	
 	switch (eng.state)
 	{
 	case RAMCASTER::ENG_RUNLO:
 	{
-		//                       dynP :  0      4      8     12     16    20     24     28    32    36    40     44
-		static double engFx_dynP[12] = { 0.00, 0.4, 0.68, 1.0385, 1.0425, 1.022,  .85,   .69,  .58,  .3,  .23,   .19 };
-		//                       Mach :  0     .5    1   1.5    2    2.5    3   3.5   4   4.5   5    5.5  
-		static double engFx_mach[12] = { 0.0,   0.2,   .33,  .5, .937, 1.048,  1.035,   .97,  .83,  .66,  .47,   .27 };
+		//                       dynP :  0   4    8      12     16      20     24     28    32   36     40    44
+		static double engFx_dynP[12] = { 0, 0.5, 0.78, 1.1385, 1.1425, 1.122, 0.95,  0.79, 0.68, 0.4,  0.33, 0.29 };
+		//                       Mach :  0  0.5   1     1.5      2      2.5     3     3.5    4   4.5     5    5.5  
+		static double engFx_mach[12] = { 0, 0.3, 0.43,  0.6,   1.037,  1.148, 1.135, 1.07, 0.93, 0.76, 0.57, 0.37 };
 
 		double DpFx = GetDynPressure() * 2.27272727e-5;
 
@@ -103,7 +108,7 @@ void G422::simEngines(double& dT, RAMCASTER& eng)
 		delta = engFx_mach[perfRefHi] - engFx_mach[perfRefLo];
 		engPerf *= engFx_mach[perfRefLo] + delta * ((MnFx * 11.0 - (double)perfRefLo) * 0.0909090909);
 
-		if (engPerf < .25) return cueEngines(eng, RAMCASTER::ENG_STOP);
+		if (engPerf < 0.25) return cueEngines(eng, RAMCASTER::ENG_STOP);
 
 		SetThrusterIsp(ramcaster, ISPMAX_RAMXLO * engPerf);
 		SetThrusterMax0(ramcaster, MAXTHRUST_RAMX_LO * engPerf);
@@ -120,10 +125,10 @@ void G422::simEngines(double& dT, RAMCASTER& eng)
 
 	case RAMCASTER::ENG_RUNHI:
 	{
-		//                        dynP :  0     4      8     12     16     20     24     28     32    36    40     44
-		static double engFx_dynP[12] = { 0.35, 0.8, 1.015, 1.2315, 1.3155, 1.3553, 1.3581, 1.165, 1.08, 0.9, 0.73,  0.56 };
-		//                        Mach :  3     4   5     6     7     8     9      10    11     12      13    14     15      16    17  
-		static double engFx_mach[15] = { 0.8, 1.3, 1.31, 1.3, 1.303, 1.3, 1.342, 1.335, 1.321, 1.782, 1.222, 1.172, 1.115, 1.004, 0.555 };
+		//                        dynP :  0     4     8      12      16      20      24     28     32    36      40     44
+		static double engFx_dynP[12] = { 0.35, 0.8, 1.015, 1.2315, 1.3155, 1.3553, 1.3581, 1.165, 1.08,  0.9,   0.73,  0.56 };
+		//                        Mach :  3    4    5     6     7     8     9      10     11     12     13     14     15      16    17  
+		static double engFx_mach[15] = { 0.8, 1.3, 1.31, 1.3, 1.303, 1.3, 1.342,  1.335, 1.321, 1.782, 1.222, 1.172, 1.115, 1.004, 0.555 };
 
 		if (GetMachNumber() < 3.0) return cueEngines(eng, RAMCASTER::ENG_STOP);
 
@@ -143,7 +148,7 @@ void G422::simEngines(double& dT, RAMCASTER& eng)
 		delta = engFx_mach[perfRefHi] - engFx_mach[perfRefLo];
 		engPerf *= engFx_mach[perfRefLo] + delta * ((MnFx * 14.0 - (double)perfRefLo) * 0.0714285714);
 
-		if (engPerf < .25) return cueEngines(eng, RAMCASTER::ENG_STOP);
+		if (engPerf < 0.25) return cueEngines(eng, RAMCASTER::ENG_STOP);
 
 		SetThrusterIsp(ramcaster, ISPMAX_RAMXHI * engPerf);
 		SetThrusterMax0(ramcaster, MAXTHRUST_RAMX_HI * engPerf);
@@ -162,7 +167,7 @@ void G422::simEngines(double& dT, RAMCASTER& eng)
 		return;
 	}
 
-	if (eng.thr < .15 || ramxDoors->pos < 1.0) // throttle too low or doors closed
+	if (eng.thr < 0.15 || ramxDoors->pos < 1) // throttle too low or doors closed
 		// engine cuts off below this point
 		cueEngines(eng, RAMCASTER::ENG_STOP);
 }

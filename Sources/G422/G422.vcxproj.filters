@@ -80,9 +80,6 @@
     <ClCompile Include="Source\G422_SIM_DYNAMICS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\G422_SYS_SIM_CUES.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\G422_VSL_SETUP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -91,6 +88,12 @@
     </ClCompile>
     <ClCompile Include="Library\EasyBMP\EasyBMP.cpp">
       <Filter>Library Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\G422_ENG_RCS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\G422_ENG_OMS.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## WIP 305 - 2019-01-
+## WIP 306 - 2020-02-28
+### Added
+- Header file generation to the 3DS Max Orbiter mesh tool.
+- Landing, taxi, and docking light.
+- ADI ball.
+- 2 Hydraulic systems.
+- Gear emergency release system.
+- Fuel lines.
+- Undocking handle.
+- HUD color and brightness buttons.
+- Anti-slip autopilot.
+- Fuel dump system.
+- Bay door switch.
+- Docking supply system.
+- Warning system, with V1 and rotate callouts.
+- RCS doors logic.
+- APU Pack B.
+### Changed
+- 3DS Max tools are now utilities instead of macro scripts.
+- RCS and OMS are now seperated systems.
+- Ramcaster engine coefficient.
+- Landing gears damping coefficient.
+### Removed
+- Useless and inoperative switches.
+
+## WIP 305 - 2020-02-06
 ### Added
 - UCSO support.
 - Missing cockpit sounds.

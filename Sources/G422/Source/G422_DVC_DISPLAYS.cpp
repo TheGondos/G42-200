@@ -8,7 +8,7 @@
 #define EICAS_MH 205
 
 inline void txtFltData(oapi::Sketchpad* skp, int x, int y, string st, double& val, int prcsn = 2);
-inline void txtFltData(oapi::Sketchpad* skp, int x, int y, double& val, int prcsn = 2);
+inline void txtFltData(oapi::Sketchpad* skp, int x, int y, double& val, int prcsn = 2, bool symbol = true);
 
 #define BLIT_PTARROW_R 56, 39, 10, 13
 #define BLIT_PTARROW_L 56, 75, 10, 13
@@ -159,9 +159,9 @@ bool G422::clbkVCRedrawEvent(int id, int ev, SURFHANDLE surf)
 		//     ramcaster flight-envelope display
 		if (drawEicas & (1 << 7))
 		{
-			if (thrFX_Y > 0.0001 && thrFX_Y < 1.0)
+			if (thrFX_Y > 0.0001 && thrFX_Y < 1)
 			{
-				if (thrFX_X > 0.0001 && thrFX_X < 1.0)
+				if (thrFX_X > 0.0001 && thrFX_X < 1)
 				{
 					sp->MoveTo(RDW_RAMXFPR_X + int(thrFX_X * RDW_RAMXFPR_W), RDW_RAMXFPR_Y);
 					sp->LineTo(RDW_RAMXFPR_X + int(thrFX_X * RDW_RAMXFPR_W), RDW_RAMXFPR_Y + RDW_RAMXFPR_H);
@@ -284,42 +284,50 @@ bool G422::clbkVCRedrawEvent(int id, int ev, SURFHANDLE surf)
 		{
 			sp->SetTextAlign(oapi::Sketchpad::CENTER, oapi::Sketchpad::BASELINE);
 
-			sp->SetPen(PEN_GREEN);
-			double fdat = apu.pwrPct * 100.0;
-			txtFltData(sp, 812, 382, fdat, 0);
-			//txtFltData(sp, 875, 382, fdat, 0);
+			sp->SetTextColor(0x00FF00);
 
-			txtFltData(sp, 812, 427, apu.exhaustTemp, 0);
-			//txtFltData(sp, 875, 427, apu.exhaustTemp, 0);
+			double fdat = apuPackA.pwrPct * 100.0;
+			txtFltData(sp, 812, 382, fdat, 0);
+			fdat = apuPackB.pwrPct * 100.0;
+			txtFltData(sp, 875, 382, fdat, 0);
+
+			txtFltData(sp, 812, 427, apuPackA.exhaustTemp, 0);
+			txtFltData(sp, 875, 427, apuPackB.exhaustTemp, 0);
 
 			sp->SetPen(PEN_AMBER);
-			fdat = apu.pwrPct * -PI;
+			fdat = apuPackA.pwrPct * -PI;
 			double dx = cos(fdat); double dy = sin(fdat);
 			sp->MoveTo(812 - int(dx * 20), 379 + int(dy * 20));
 			sp->LineTo(812 - int(dx * 27), 379 + int(dy * 27));
 
-			//sp->MoveTo(875 - int(dx * 20), 379 + int(dy * 20));
-			//sp->LineTo(875 - int(dx * 27), 379 + int(dy * 27));
+			fdat = apuPackB.pwrPct * -PI;
+			dx = cos(fdat); dy = sin(fdat);
+			sp->MoveTo(875 - int(dx * 20), 379 + int(dy * 20));
+			sp->LineTo(875 - int(dx * 27), 379 + int(dy * 27));
 
-			fdat = (apu.exhaustTemp / 527) * -105 * RAD;
+			sp->SetTextColor(0xFFFFFF);
+			fdat = (apuPackA.exhaustTemp / 527) * -105 * RAD;
 			dx = cos(fdat); dy = sin(fdat);
 			sp->MoveTo(812 - int(dx * 20), 423 + int(dy * 20));
 			sp->LineTo(812 - int(dx * 27), 423 + int(dy * 27));
 
-			//sp->MoveTo(875 - int(dx * 20), 423 + int(dy * 20));
-			//sp->LineTo(875 - int(dx * 27), 423 + int(dy * 27));
+			fdat = (apuPackB.exhaustTemp / 527) * -105 * RAD;
+			dx = cos(fdat); dy = sin(fdat);
+			sp->MoveTo(875 - int(dx * 20), 423 + int(dy * 20));
+			sp->LineTo(875 - int(dx * 27), 423 + int(dy * 27));
 
-			sp->SetPen(PEN_WHITE);
-			fdat = GetPropellantMass(fuel_sys);
+			fdat = (GetPropellantMass(fuel_sys) / GetPropellantMaxMass(fuel_sys)) * 100;
 			txtFltData(sp, 1000, 377, fdat, 1);
 
-			txtFltData(sp, 1000, 388, apu.usedFuel, 1);
+			fdat = apuPackA.usedFuel + apuPackB.usedFuel;
+			txtFltData(sp, 1000, 388, fdat, 1);
 
-			txtFltData(sp, 1000, 404, apu.fuelFlow, 3);
+			fdat = apuPackA.fuelFlow + apuPackB.fuelFlow;
+			txtFltData(sp, 1000, 404, fdat, 3);
 
-			if (apu.state == APU::ENG_RUN)
+			if (apuPackA.state == APU::ENG_RUN && apuPackB.state == APU::ENG_RUN)
 			{
-				fdat = GetPropellantMass(fuel_sys) / (apu.fuelFlow * 60 * 60);
+				fdat = GetPropellantMass(fuel_sys) / ((apuPackA.fuelFlow + apuPackB.fuelFlow) * 60 * 60);
 				string endr = to_string(int(fdat));
 				endr += ":";
 				endr += to_string(int((fdat - int(fdat)) * 60));
@@ -328,6 +336,20 @@ bool G422::clbkVCRedrawEvent(int id, int ev, SURFHANDLE surf)
 			}
 		}
 
+		// Hydraulics
+		if (drawEicas & (1 << 2))
+		{
+			double fdat = hydSysA.hydPrs;
+			sp->SetTextColor(fdat >= 2800 ? 0x00FF00 : 0x0000FF);
+			txtFltData(sp, 300, 261, fdat, 0, false);
+
+			fdat = hydSysB.hydPrs;
+			sp->SetTextColor(fdat >= 2800 ? 0x00FF00 : 0x0000FF);
+			txtFltData(sp, 474, 261, fdat, 0, false);
+		}
+
+		sp->SetPen(PEN_WHITE);
+		sp->SetTextColor(0xFFFFFF);
 		sp->SetTextAlign(oapi::Sketchpad::LEFT, oapi::Sketchpad::BASELINE);
 
 		// FUEL RESERVES PANEL
@@ -385,11 +407,11 @@ bool G422::clbkVCRedrawEvent(int id, int ev, SURFHANDLE surf)
 			{
 				sp->SetPen(PEN_WHITE);
 
-				if (wingTipFthr->pos + wingTipWvrd->pos == 0.0) { dX = 1.0; dY = 0.0; }
+				if (wingTipFthr->pos + wingTipWvrd->pos == 0) { dX = 1; dY = 0; }
 				else
 				{
-					dX = 0.0;
-					dY = (wingTipFthr->pos > wingTipWvrd->pos) ? -1.0 : 1.0;
+					dX = 0;
+					dY = (wingTipFthr->pos > wingTipWvrd->pos) ? -1 : 1;
 				}
 
 				sp->MoveTo(54 - int(dX * 5), 680 + int(dY * 5));
@@ -537,6 +559,9 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 			break;
 		}
 
+		if (apSet)
+			skp->Text(hps->W - 180, hps->H - 30, "|   ANTISLP   |", 15);
+
 		if (GetNavmodeState(NAVMODE_KILLROT))
 			skp->Text(hps->W - 180, hps->H - 30, "|   KILLROT   |", 15);
 
@@ -559,22 +584,22 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 			skp->Text(hps->W - 180, hps->H - 30, "|   HOLDALT   |", 15);
 
 		// show RCS / OMS mode
-		if (rcoms.state & RCOMS::SYS_RCSTBY)
+		if (rcs.state == RCS::SST_STBY)
 		{
 			switch (GetAttitudeMode())
 			{
 			case RCS_ROT:
-				if (!rcsMode) skp->Text(5, hps->H - 60, "RCS ROT", 7);
+				if (!rcs.mode) skp->Text(5, hps->H - 60, "RCS ROT", 7);
 				else skp->Text(5, hps->H - 60, "DOCK RCS ROT", 12);
 				break;
 			case RCS_LIN:
-				if (!rcsMode) skp->Text(5, hps->H - 60, "RCS LIN", 7);
+				if (!rcs.mode) skp->Text(5, hps->H - 60, "RCS LIN", 7);
 				else skp->Text(5, hps->H - 60, "DOCK RCS LIN", 12);
 				break;
 			}
 		}
 
-		if (rcoms.state & RCOMS::SYS_OMSTBY && thr_authority) skp->Text(120, hps->H - 30, "|  OMS  |", 9);
+		if (oms.state == OMS::SST_STBY && thr_authority) skp->Text(120, hps->H - 30, "|  OMS  |", 9);
 
 		if (prk_brake_mode) skp->Text(5, hps->H - 45, "PK BRAKES", 9);
 
@@ -607,8 +632,8 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 		{
 		case UCSO::Vessel::STATIC:
 			skp->Text(5, y - 40, "Type: Static", 12);
-
 			break;
+
 		case UCSO::Vessel::RESOURCE:
 			skp->Text(5, y - 40, "Type: Resource", 14);
 			y += 20;
@@ -619,8 +644,8 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 
 			sprintf(buffer, "Resource mass: %d", int(round(cargoInfo.resourceMass)));
 			skp->Text(5, y, buffer, strlen(buffer));
-
 			break;
+
 		case UCSO::Vessel::UNPACKABLE_ONLY:
 			skp->Text(5, y - 40, "Type: Unpackable only", 21);
 			y += 20;
@@ -628,6 +653,7 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 			sprintf(buffer, "Unpacked spawn count: %d cargo(es)", cargoInfo.spawnCount);
 			skp->Text(5, y, buffer, strlen(buffer));
 			y += 20;
+
 		case UCSO::Vessel::PACKABLE_UNPACKABLE:
 			if (cargoInfo.type == UCSO::Vessel::PACKABLE_UNPACKABLE)
 			{
@@ -640,16 +666,16 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 			case UCSO::Vessel::UCSO_RESOURCE:
 				skp->Text(5, y, "Unpacking type: UCSO Resource", 29);
 				y += 20;
-
 				break;
+
 			case UCSO::Vessel::UCSO_MODULE:
 				skp->Text(5, y, "Unpacking type: UCSO Module", 27);
 				y += 20;
 
 				sprintf(buffer, "Breathable: %s", cargoInfo.breathable ? "Yes" : "No");
 				skp->Text(5, y, buffer, strlen(buffer));
-
 				break;
+
 			case UCSO::Vessel::ORBITER_VESSEL:
 				skp->Text(5, y, "Unpacking type: Orbiter vessel", 30);
 				y += 20;
@@ -662,29 +688,28 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 				{
 				case UCSO::Vessel::LANDING:
 					skp->Text(5, y, "Unpacking mode: Landing", 23);
-
 					break;
+
 				case UCSO::Vessel::DELAYING:
 					skp->Text(5, y, "Unpacking mode: Delaying", 24);
 					y += 20;
 
 					sprintf(buffer, "Unpacking delay: %is", cargoInfo.unpackingDelay);
 					skp->Text(5, y, buffer, strlen(buffer));
-
 					break;
+
 				case UCSO::Vessel::MANUAL:
 					skp->Text(5, y, "Unpacking mode: Manual", 22);
-
 					break;
 				}
 				break;
+
 			case UCSO::Vessel::CUSTOM_CARGO:
 				skp->Text(5, y, "Unpacking type: Custom cargo", 28);
 				y += 20;
 
 				sprintf(buffer, "Breathable: %s", cargoInfo.breathable ? "Yes" : "No");
 				skp->Text(5, y, buffer, strlen(buffer));
-
 				break;
 			}
 			break;
@@ -707,11 +732,11 @@ inline void txtFltData(oapi::Sketchpad* skp, int x, int y, string st, double& va
 	skp->Text(x, y, st.c_str(), st.length());
 }
 
-inline void txtFltData(oapi::Sketchpad* skp, int x, int y, double& val, int prcsn)
+inline void txtFltData(oapi::Sketchpad* skp, int x, int y, double& val, int prcsn, bool symbol)
 {
 	ostringstream strm;
 
-	if (abs(val) < 1000) strm << fixed << setprecision(prcsn) << val;
+	if (abs(val) < 1000 || !symbol) strm << fixed << setprecision(prcsn) << val;
 	else if (abs(val) < 1000000) strm << fixed << setprecision(prcsn) << (val / 1000) << "K";
 	else strm << fixed << setprecision(prcsn) << (val / 1000000) << "M";
 

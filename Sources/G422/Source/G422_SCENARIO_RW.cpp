@@ -27,7 +27,7 @@ void G422::clbkLoadStateEx(FILEHANDLE scn, void* status)
 		else if (CFGCheckTag(lineChars, "WING_WVRD", &cfgLoadInt)) wingTipWvrd->loadCfgState(cfgLoadInt);
 		else if (CFGCheckTag(lineChars, "WING_FTHR", &cfgLoadInt)) wingTipFthr->loadCfgState(cfgLoadInt);
 		else if (CFGCheckTag(lineChars, "CGO_BAY", &cfgLoadInt)) bayDoors->loadCfgState(cfgLoadInt);
-		else if (CFGCheckTag(lineChars, "RCSDOORS", &cfgLoadInt)) rcs->loadCfgState(cfgLoadInt);
+		else if (CFGCheckTag(lineChars, "RCSDOORS", &cfgLoadInt)) rcsDoors->loadCfgState(cfgLoadInt);
 
 		else if (CFGCheckTag(lineChars, "MAIN_ENG_MD", &cfgLoadInt)) main_eng_mode = cfgLoadInt;
 		else if (CFGCheckTag(lineChars, "RAMX_ENG_MD", &cfgLoadInt)) ramcaster_mode = cfgLoadInt;
@@ -42,23 +42,44 @@ void G422::clbkLoadStateEx(FILEHANDLE scn, void* status)
 		else if (!_strnicmp(lineChars, "ENG_MAIN_", 9))
 		{
 			if (lineChars[9] == 'L') // load state for left main engine
-				sscanf(lineChars + 10, "%d%d%lf%lf%lf%lf%lf",
-					&engMain_L.state, &engMain_L.feed, &engMain_L.thr, &engMain_L.genPct,
+				sscanf(lineChars + 10, "%d%lf%lf%lf%lf%lf",
+					&engMain_L.state, &engMain_L.thr, &engMain_L.genPct,
 					&engMain_L.epr, &engMain_L.fuelPrs, &engMain_L.oxyPrs);
 			else // load state for right  main engine
-				sscanf(lineChars + 10, "%d%d%lf%lf%lf%lf%lf",
-					&engMain_R.state, &engMain_R.feed, &engMain_R.thr, &engMain_R.genPct,
+				sscanf(lineChars + 10, "%d%lf%lf%lf%lf%lf",
+					&engMain_R.state, &engMain_R.thr, &engMain_R.genPct,
 					&engMain_R.epr, &engMain_R.fuelPrs, &engMain_R.oxyPrs);
 		}
+
 		else if (!_strnicmp(lineChars, "ENG_RAMX", 8))
-			sscanf(lineChars + 8, "%d%d%lf%lf%lf",
-				&engRamx.state, &engRamx.feed, &engRamx.thr, &engRamx.epr, &engRamx.fuelPrs);
-		else if (!_strnicmp(lineChars, "ENG_APU", 7))
-			sscanf(lineChars + 7, "%d%d%lf%lf%lf",
-				&apu.state, &apu.feed, &apu.pwrPct, &apu.fuelPrs, &apu.fuelFlow);
+			sscanf(lineChars + 8, "%d%lf%lf%lf", &engRamx.state, &engRamx.thr, &engRamx.epr, &engRamx.fuelPrs);
+
+		else if (!_strnicmp(lineChars, "ENG_APU_", 8))
+		{
+			if (lineChars[8] == 'A')
+				sscanf(lineChars + 9, "%d%lf%lf%lf", &apuPackA.state, &apuPackA.pwrPct, &apuPackA.fuelPrs, &apuPackA.fuelFlow);
+			else
+				sscanf(lineChars + 9, "%d%lf%lf%lf", &apuPackB.state, &apuPackB.pwrPct, &apuPackB.fuelPrs, &apuPackB.fuelFlow);
+		}
+
+		else if (!_strnicmp(lineChars, "SYS_HYD_", 8))
+		{
+			if (lineChars[8] == 'A')
+				sscanf(lineChars + 9, "%lf%lf", &hydSysA.hydPrs, &hydSysA.hydFlow);
+			else
+				sscanf(lineChars + 9, "%lf%lf", &hydSysB.hydPrs, &hydSysB.hydFlow);
+		}
+
+		else if (!_strnicmp(lineChars, "ENG_RCS", 7))
+			sscanf(lineChars + 7, "%d%lf%lf", &rcs.state, &rcs.fuelPrs, &rcs.fuelFlow);
+
+		else if (!_strnicmp(lineChars, "ENG_OMS", 7))
+			sscanf(lineChars + 7, "%d%lf%lf%lf", &oms.state, &oms.fuelPrs, &oms.fuelFlow, &oms.thr);
+
 		else if (!_strnicmp(lineChars, "VC_EICAS", 8))
 			sscanf(lineChars + 8, "%d%d%d%d%d%d",
 				VC_eicas_screens + 5, VC_eicas_screens + 4, VC_eicas_screens, VC_eicas_screens + 1, VC_eicas_screens + 2, VC_eicas_screens + 3);
+
 		else ParseScenarioLineEx(lineChars, status);
 	}
 }
@@ -71,7 +92,7 @@ void G422::clbkSaveState(FILEHANDLE scn)
 	oapiWriteScenario_int(scn, "GEARS", landingGears->getCfgState());
 	oapiWriteScenario_int(scn, "CNRDS", canards->getCfgState());
 	oapiWriteScenario_int(scn, "VISOR", visor->getCfgState());
-	oapiWriteScenario_int(scn, "RCSDOORS", rcs->getCfgState());
+	oapiWriteScenario_int(scn, "RCSDOORS", rcsDoors->getCfgState());
 
 	oapiWriteScenario_int(scn, "INLET_MAIN", inltDoors->getCfgState());
 	oapiWriteScenario_int(scn, "INLET_RAMX", ramxDoors->getCfgState());
@@ -81,7 +102,6 @@ void G422::clbkSaveState(FILEHANDLE scn)
 
 	oapiWriteScenario_int(scn, "CGO_BAY", bayDoors->getCfgState());
 
-	
 	// now, simulation things....
 	oapiWriteScenario_int(scn, "MAIN_ENG_MD", main_eng_mode);
 	oapiWriteScenario_int(scn, "RAMX_ENG_MD", ramcaster_mode);
@@ -90,20 +110,35 @@ void G422::clbkSaveState(FILEHANDLE scn)
 	// engines crap...
 	char scnData[256];
 
-	sprintf(scnData, "%d %d %0.4f %0.4f %0.4f %0.4f %0.4f",
-		engMain_L.state, engMain_L.feed, engMain_L.thr, engMain_L.genPct, engMain_L.epr, engMain_L.fuelPrs, engMain_L.oxyPrs);
+	sprintf(scnData, "%d %0.4f %0.4f %0.4f %0.4f %0.4f",
+		engMain_L.state, engMain_L.thr, engMain_L.genPct, engMain_L.epr, engMain_L.fuelPrs, engMain_L.oxyPrs);
 	oapiWriteScenario_string(scn, "ENG_MAIN_L", scnData); // left main engine
 
-	sprintf(scnData, "%d %d %0.4f %0.4f %0.4f %0.4f %0.4f",
-		engMain_R.state, engMain_R.feed, engMain_R.thr, engMain_R.genPct, engMain_R.epr, engMain_R.fuelPrs, engMain_R.oxyPrs);
+	sprintf(scnData, "%d %0.4f %0.4f %0.4f %0.4f %0.4f",
+		engMain_R.state, engMain_R.thr, engMain_R.genPct, engMain_R.epr, engMain_R.fuelPrs, engMain_R.oxyPrs);
 	oapiWriteScenario_string(scn, "ENG_MAIN_R", scnData); // right main engine
 
-	sprintf(scnData, "%d %d %0.4f %0.4f %0.4f",
-		engRamx.state, engRamx.feed, engRamx.thr, engRamx.epr, engRamx.fuelPrs);
+	sprintf(scnData, "%d %0.4f %0.4f %0.4f",
+		engRamx.state, engRamx.thr, engRamx.epr, engRamx.fuelPrs);
 	oapiWriteScenario_string(scn, "ENG_RAMX", scnData); // ramcaster
 
-	sprintf(scnData, "%d %d %0.4f %0.4f %0.4f", apu.state, apu.feed, apu.pwrPct, apu.fuelPrs, apu.fuelFlow);
-	oapiWriteScenario_string(scn, "ENG_APU", scnData); // APU
+	sprintf(scnData, "%d %0.4f %0.4f %0.4f", apuPackA.state, apuPackA.pwrPct, apuPackA.fuelPrs, apuPackA.fuelFlow);
+	oapiWriteScenario_string(scn, "ENG_APU_A", scnData); // APU pack A
+
+	sprintf(scnData, "%d %0.4f %0.4f %0.4f", apuPackB.state, apuPackB.pwrPct, apuPackB.fuelPrs, apuPackB.fuelFlow);
+	oapiWriteScenario_string(scn, "ENG_APU_B", scnData); // APU pack B
+
+	sprintf(scnData, "%0.4f %0.4f", hydSysA.hydPrs, hydSysA.hydFlow);
+	oapiWriteScenario_string(scn, "SYS_HYD_A", scnData); // Hydraulic A
+
+	sprintf(scnData, "%0.4f %0.4f", hydSysB.hydPrs, hydSysB.hydFlow);
+	oapiWriteScenario_string(scn, "SYS_HYD_B", scnData); // Hydraulic B
+
+	sprintf(scnData, "%d %0.4f %0.4f", rcs.state, rcs.fuelPrs, rcs.fuelFlow);
+	oapiWriteScenario_string(scn, "ENG_RCS", scnData); // RCS
+
+	sprintf(scnData, "%d %0.4f %0.4f %0.4f", oms.state, oms.fuelPrs, oms.fuelFlow, oms.thr);
+	oapiWriteScenario_string(scn, "ENG_OMS", scnData); // OMS
 
 	// ok... now onto VC stuff
 	sprintf(scnData, "%d %d %d %d %d %d",
@@ -136,14 +171,14 @@ void MovingPart::loadCfgState(int state)
 	if (state == 2)
 	{
 		mp_status = MP_HI_DETENT;
-		pos = 1.0;
+		pos = 1;
 		vsl->SetAnimation(anim_idx, pos);
 	}
 
 	else if (state == 1)
 	{
 		mp_status = MP_LOW_DETENT;
-		pos = 0.0;
+		pos = 0;
 		vsl->SetAnimation(anim_idx, pos);
 		return;
 	}

@@ -30,12 +30,12 @@ void VLiftCoeff (VESSEL *v, double aoa, double M, double Re, void *context, doub
 	
 	wingPos = (static_cast<G422*>( v ))->wingTipFthr->pos;
 
-	if (wingPos > 0.01) *cl = (*cl) * (1.0 - wingPos * WINGFTHR_LIFTDMP);
+	if (wingPos > 0.01) *cl = (*cl) * (1 - wingPos * WINGFTHR_LIFTDMP);
 
 	double saoa = sin(aoa);
 	double pd = 0.015 + 0.4*saoa*saoa;  // profile drag
 	
-	double wd = oapiGetWaveDrag (M, 0.75, 1.0, 1.1, 0.04);
+	double wd = oapiGetWaveDrag (M, 0.75, 1, 1.1, 0.04);
 	*cd = pd + oapiGetInducedDrag (*cl, 1.5, 0.7) + wd;
 	// profile drag + (lift-)induced drag + transonic/supersonic wave (compressibility) drag
 	
@@ -61,8 +61,8 @@ void HLiftCoeff (VESSEL *v, double beta, double M, double Re, void *context, dou
 	for (i = 0; i < nabsc-1 && BETA[i+1] < beta; i++);
 	*cl = CL[i] + (CL[i+1]-CL[i]) * (beta-BETA[i]) / (BETA[i+1]-BETA[i]);
 
-	*cm = 0.0;
-	*cd = 0.015 + oapiGetInducedDrag (*cl, 1.5, 0.6) + oapiGetWaveDrag (M, 0.75, 1.0, 1.1, 0.04);
+	*cm = 0;
+	*cd = 0.015 + oapiGetInducedDrag (*cl, 1.5, 0.6) + oapiGetWaveDrag (M, 0.75, 1, 1.1, 0.04);
 }
 
 void RAMX_FxModel(VESSEL *vessel, G422::RAMCASTER &ramx)
@@ -82,12 +82,12 @@ void RAMX_FxModel(VESSEL *vessel, G422::RAMCASTER &ramx)
 		T0  = vessel->GetAtmTemperature();                 // freestream temperature
 		p0  = vessel->GetAtmPressure();                    // freestream pressure
 		rho = vessel->GetAtmDensity();                     // freestream density
-		cp  = atm->gamma * atm->R / (atm->gamma-1.0);      // specific heat (pressure)
+		cp  = atm->gamma * atm->R / (atm->gamma-1);      // specific heat (pressure)
 		v0  = M * sqrt (atm->gamma * atm->R * T0);         // freestream velocity
-		tr  = (1.0 + 0.5*(atm->gamma-1.0) * M*M);          // temperature ratio
+		tr  = (1 + 0.5*(atm->gamma-1) * M*M);          // temperature ratio
 		Td  = T0 * tr;                                     // diffuser temperature
-		pd  = p0 * pow (Td/T0, atm->gamma/(atm->gamma-1.0)); // diffuser pressure
-		precov = max (0.0, 1.0-0.075*pow (max(M,1.0)-1.0, 1.35)); // pressure recovery
+		pd  = p0 * pow (Td/T0, atm->gamma/(atm->gamma-1)); // diffuser pressure
+		precov = max (0, 1-0.075*pow (max(M,1)-1, 1.35)); // pressure recovery
 		dmafac = dma_scale*precov*pd;
 	}
 }
@@ -98,7 +98,7 @@ FXMapRef fxRef;
 
 double FXMapRedChannel(BMP &tex, double u, double v) 
 {
-	u = clamp(0.0, u, 1.0) * 256; v = clamp(0.0, v, 1.0) * 256;
+	u = clamp(0, u, 1) * 256; v = clamp(0, v, 1) * 256;
 	int x = int(floor(u));
 	int y = int(floor(v));
 	double u_ratio = u - x;
@@ -117,7 +117,7 @@ double FXMapRedChannel(BMP &tex, double u, double v)
 
 double FXMapGreenChannel(BMP &tex, double u, double v) 
 {
-	u = clamp(0.0, u, 1.0) * 256; v = clamp(0.0, v, 1.0) * 256;
+	u = clamp(0, u, 1) * 256; v = clamp(0, v, 1) * 256;
 	int x = int(floor(u));
 	int y = int(floor(v));
 	double u_ratio = u - x;
@@ -136,7 +136,7 @@ double FXMapGreenChannel(BMP &tex, double u, double v)
 
 double FXMapBlueChannel(BMP &tex, double u, double v) 
 {
-	u = clamp(0.0, u, 1.0) * 256; v = clamp(0.0, v, 1.0) * 256;
+	u = clamp(0, u, 1) * 256; v = clamp(0, v, 1) * 256;
 	int x = int(floor(u));
 	int y = int(floor(v));
 	double u_ratio = u - x;
@@ -154,7 +154,7 @@ double FXMapBlueChannel(BMP &tex, double u, double v)
 
 void FXMapAll(FXMapRef &fxr, BMP &tex, double u, double v) 
 {
-	u = clamp(0.0, u, 1.0) * 256; v = clamp(0.0, v, 1.0) * 256;
+	u = clamp(0, u, 1) * 256; v = clamp(0, v, 1) * 256;
 	int x = int(floor(u));
 	int y = int(floor(v));
 	double u_ratio = u - x;
