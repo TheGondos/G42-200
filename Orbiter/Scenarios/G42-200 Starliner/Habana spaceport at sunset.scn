@@ -1,0 +1,95 @@
+BEGIN_DESC
+Taxi from the Habana airport to the runway, takeoff the G42-200 Starliner, and enjoy the views of the sunset in the Caribbean.
+
+
+Remember to use the lights panel to set the right ilumination for a better taxi to the runway and take-off.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 59271.9801773864
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship G42-200
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET G42-200
+  MODE Extern
+  POS 2.509699 159.099762 -3.724226
+  TRACKMODE TargetRelative
+  FOV 30.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE HSI
+  NAV 0 0
+  OBS 0.02 0.00
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  ALT
+  REF Earth
+END_MFD
+
+BEGIN_MFD 3
+  TYPE Surface
+  SPDMODE 1
+END_MFD
+
+BEGIN_MFD 4
+  TYPE Map
+  REF Earth
+  ZOOM 8
+END_MFD
+
+BEGIN_VC
+END_VC
+
+BEGIN_SHIPS
+G42-200:G42-200_Starliner
+  STATUS Landed Earth
+  POS -82.3994300 22.9968700
+  HEADING 150.25
+  ALT 5.712
+  AROT -107.793 -32.345 171.215
+  PRPLEVEL 0:0.850000 1:1.000000 2:1.000000 3:1.000000
+  NAVFREQ 0 0
+  XPDR 0
+  LDG_GEAR 2
+  CNRDS 2
+  VISOR 1
+  RCSDOORS 1
+  INLET_LMAIN 1
+  INLET_RMAIN 1
+  INLET_RAMX 1
+  WING_WVRD 1
+  WING_FTHR 1
+  CGO_BAY 1
+  BURNER_ENG_MD 0
+  RAMX_ENG_MD 0
+  PRK_BRAKE_MD 1
+  VC_SEAT 0
+  ENG_MAIN_L 0 0 0.0000 0.0000 0.0000 0.0000 0.0000
+  ENG_MAIN_R 0 0 0.0000 0.0000 0.0000 0.0000 0.0000
+  ENG_RAMX 0 0.0000 0.0000 0.0000
+  ENG_APU_A 0 0.0000 0.0000 0.0000
+  ENG_APU_B 0 0.0000 0.0000 0.0000
+  SYS_HYD_A 0.0000 0.0000
+  SYS_HYD_B 0.0000 0.0000
+  ENG_RCS 0 0.0000 0.0000
+  ENG_OMS 0 0.0000 0.0000 0.0000
+  VC_SWS ====^^^v^vvvvvvvvv===--==vv=-=vv^=vvvvvvvvvv
+  VC_KBS --vvvvvvvvv
+  VC_EICAS -1 -1 5 7 9 8
+  CG_POS 0.000000
+END
+END_SHIPS

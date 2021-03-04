@@ -1,0 +1,15 @@
+BEGIN_HYPERDESC
+<h1>G42-200 Starliner</h1>
+<p><b>The G42-200 Starliner</b> is a state-of-the-art aircraft capable of accelerating out of the atmosphere and into low earth orbit. Categorized as a spaceplane, the G42 features airliner-like handling characteristics, which makes it optimal for low-cost space travel and cargo lifting based on conventional or mildly adapted airfields at a fraction of the costs usually associated with space operations.</p>
+
+<p>Fitted with a set of two RT66 Turbo-Rocket Hybrid cycle jet engines, and the ground-breaking RAMCASTER ram/scramjet system, the G42 can reach orbital velocity by simply flying out of the atmosphere, ascending as an airplane relying on its wings for lift, ultimately firing its engines in pure-rocket mode for a final boost towards orbit.</p>
+
+<p><b>>>>Requirements<<<</b></p>
+
+<p>In order to enable cargo management and sound support, you need to install UCSO and Dynamic XRSound, all available for free.</p>
+
+<p><a href="https://www.orbithangar.com/showAddon.php?id=6f05850c-8b74-484b-a0c0-c6a908ccfe81" target="_blank">Download <b>UCSO</b> from Orbit Hangar Mods</a></p>
+
+<p><a href="https://www.orbithangar.com/showAddon.php?id=5376bb58-c52b-4708-a4eb-cdcb7eb1dc55" target="_blank">Download <b>Dynamic XRSound</b> from Orbit Hangar Mods</a></p>
+
+END_HYPERDESC

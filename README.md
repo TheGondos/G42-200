@@ -1,7 +1,7 @@
 # G42-200 Starliner
-The G42-200 is a state-of-the-art aircraft capable of accelerating out of the atmosphere and into low earth orbit - Categorized as a spaceplane,
- the G42 features airliner-like handling characteristics which makes it optimal for low-cost space travel and cargo lifting based on conventional or mildly adapted airfields
- at a fraction of the costs usually associated with space operations.
+The G42-200 is a state-of-the-art aircraft capable of accelerating out of the atmosphere and into low earth orbit - Categorized as a spaceplane, 
+the G42 features airliner-like handling characteristics which makes it optimal for low-cost space travel and cargo lifting based on conventional or mildly adapted airfields 
+at a fraction of the costs usually associated with space operations.
  
 Development thread: [Updated G42-200 Starliner](https://www.orbiter-forum.com/showthread.php?t=41302)
  

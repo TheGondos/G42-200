@@ -44,9 +44,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(ModuleDir)\</OutDir>
     <LinkIncremental>true</LinkIncremental>
+    <IntDir>Build\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ModuleDir)\</OutDir>
+    <IntDir>Build\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -54,7 +56,7 @@
     </ClCompile>
     <Link>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;UCSO_API.lib;legacy_stdio_definitions.lib;OrbiterSoundSDK40.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;UCSO_API.lib;DynamicXRSoundD.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -63,42 +65,37 @@
       <AdditionalOptions>/Zc:strictStrings- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;UCSO_API.lib;legacy_stdio_definitions.lib;OrbiterSoundSDK40.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;UCSO_API.lib;DynamicXRSound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Library\EasyBMP\EasyBMP.h" />
-    <ClInclude Include="Library\EasyBMP\EasyBMP_BMP.h" />
-    <ClInclude Include="Library\EasyBMP\EasyBMP_DataStructures.h" />
-    <ClInclude Include="Library\EasyBMP\EasyBMP_VariousBMPutilities.h" />
-    <ClInclude Include="Header\G422.h" />
-    <ClInclude Include="Header\G422_DVC.h" />
-    <ClInclude Include="Header\G422_MDL_DVC.h" />
-    <ClInclude Include="Header\G422_MDL_EXT.h" />
-    <ClInclude Include="Header\resource.h" />
+    <ClInclude Include="Headers\G422.h" />
+    <ClInclude Include="Headers\G422_DVC.h" />
+    <ClInclude Include="Headers\G422_MDL_DVC.h" />
+    <ClInclude Include="Headers\G422_MDL_EXT.h" />
+    <ClInclude Include="Headers\resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Library\EasyBMP\EasyBMP.cpp" />
-    <ClCompile Include="Source\G422_ANIMATIONS.cpp" />
-    <ClCompile Include="Source\G422_AUX.cpp" />
-    <ClCompile Include="Source\G422_DVC_DISPLAYS.cpp" />
-    <ClCompile Include="Source\G422_DVC_SETUP.cpp" />
-    <ClCompile Include="Source\G422_ENG_APUSYS.cpp" />
-    <ClCompile Include="Source\G422_ENG_OMS.cpp" />
-    <ClCompile Include="Source\G422_ENG_RAMCASTER.cpp" />
-    <ClCompile Include="Source\G422_ENG_RT66.cpp" />
-    <ClCompile Include="Source\G422_OAPI.cpp" />
-    <ClCompile Include="Source\G422_SCENARIO_RW.cpp" />
-    <ClCompile Include="Source\G422_SIM_CONTROLS.cpp" />
-    <ClCompile Include="Source\G422_SIM_DYNAMICS.cpp" />
-    <ClCompile Include="Source\G422_ENG_RCS.cpp" />
-    <ClCompile Include="Source\G422_VSL_SETUP.cpp" />
-    <ClCompile Include="Source\G422_VSL_UPDATE.cpp" />
+    <ClCompile Include="Sources\G422_ANIMATIONS.cpp" />
+    <ClCompile Include="Sources\G422_AUX.cpp" />
+    <ClCompile Include="Sources\G422_DVC_DISPLAYS.cpp" />
+    <ClCompile Include="Sources\G422_DVC_SETUP.cpp" />
+    <ClCompile Include="Sources\G422_ENG_APUSYS.cpp" />
+    <ClCompile Include="Sources\G422_ENG_OMS.cpp" />
+    <ClCompile Include="Sources\G422_ENG_RAMCASTER.cpp" />
+    <ClCompile Include="Sources\G422_ENG_RT66.cpp" />
+    <ClCompile Include="Sources\G422_OAPI.cpp" />
+    <ClCompile Include="Sources\G422_SCENARIO_RW.cpp" />
+    <ClCompile Include="Sources\G422_SIM_CONTROLS.cpp" />
+    <ClCompile Include="Sources\G422_SIM_DYNAMICS.cpp" />
+    <ClCompile Include="Sources\G422_ENG_RCS.cpp" />
+    <ClCompile Include="Sources\G422_VSL_SETUP.cpp" />
+    <ClCompile Include="Sources\G422_VSL_UPDATE.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Resource\G422.rc" />
+    <ResourceCompile Include="Resources\G422.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
