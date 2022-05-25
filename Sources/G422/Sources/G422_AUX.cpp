@@ -1,5 +1,5 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_DVC.h"
 
 MovingPart::MovingPart(UINT animIndex, double rate, Status status, double pos, G422* vesselRef, int sysID, int soundID) :
 	animIndex(animIndex), rate(rate), mpStatus(status), pos(pos), vessel(vesselRef), sysID(sysID), soundID(soundID)

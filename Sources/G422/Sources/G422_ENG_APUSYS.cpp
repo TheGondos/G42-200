@@ -1,6 +1,6 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_MDL_DVC.h"
-#include "..\Headers\G422_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_MDL_DVC.h"
+#include "../Headers/G422_DVC.h"
 
 void G422::cueEngines(APU& eng, APU::SIMSTATE sst)
 {
@@ -35,15 +35,17 @@ void G422::simEngines(double& dT, APU& eng)
 {
 	double fuelMass = GetPropellantMass(asfFuel);
 
-	if (eng.feed & APU::FUEL_PUMP && (fuelMass < 0.001 || !(eng.feed & APU::FUEL_OPEN)))
-		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_SYSFEED_APU] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+	if (eng.feed & APU::FUEL_PUMP && (fuelMass < 0.001 || !(eng.feed & APU::FUEL_OPEN))) {
+		VECTOR3 V0 = _V0;
+		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_SYSFEED_APU] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
+	}
 
 	if (eng.feed & APU::FUEL_PUMP) // simulate fuel line pressure from pumps
 	{
 		if (eng.fuelPrs < 1)
 		{
 			double deltaPrs = 0.22 * dT;
-			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1);
+			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1.0);
 		}
 	}
 	else
@@ -51,7 +53,7 @@ void G422::simEngines(double& dT, APU& eng)
 		if (eng.fuelPrs > 0)
 		{
 			double deltaPrs = -0.12 * (1 - eng.pwrPct * .5) * dT;
-			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0);
+			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0.0);
 		}
 	} 
 
@@ -78,7 +80,7 @@ void G422::simEngines(double& dT, APU& eng)
 		}
 		else if (eng.hydSys->hydFlow > 0)
 		{
-			eng.hydSys->hydFlow = max(eng.hydSys->hydFlow - (2.86 * 0.12 * dT), 0);
+			eng.hydSys->hydFlow = max(eng.hydSys->hydFlow - (2.86 * 0.12 * dT), 0.0);
 			eng.hydSys->hydPrs = eng.hydSys->hydFlow * 1050;
 		}
 

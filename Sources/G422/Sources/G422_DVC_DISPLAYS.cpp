@@ -1,6 +1,7 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_MDL_DVC.h"
-#include "..\Headers\G422_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_MDL_DVC.h"
+#include "../Headers/G422_DVC.h"
+#include <cstring>
 
 #define EICAS_W 340
 #define EICAS_H 410
@@ -21,7 +22,7 @@ void G422::selEicasMode(int eicasIndex, int mode)
 
 	if (mode == 0) return; // there is no mode zero...
 
-	static WORD vIdx[4] = { 0,1,2,3 };
+	static uint16_t vIdx[4] = { 0,1,2,3 };
 	NTVERTEX vtx[4];
 
 	if (mode >= 0)
@@ -758,7 +759,7 @@ bool G422::clbkDrawHUD(int mode, const HUDPAINTSPEC* hps, oapi::Sketchpad* skp)
 	// Clear the message after 5 seconds
 	else if (!clearMessage)
 	{
-		sprintf(oapiDebugString(), "");
+		strcpy(oapiDebugString(), "");
 		clearMessage = true;
 	}
 

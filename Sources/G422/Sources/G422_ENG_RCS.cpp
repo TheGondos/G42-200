@@ -1,6 +1,6 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_DVC.h"
-#include "..\Headers\G422_MDL_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_DVC.h"
+#include "../Headers/G422_MDL_DVC.h"
 
 void G422::cueEngines(RCS& eng, RCS::SIMSTATE sst)
 {
@@ -141,16 +141,17 @@ void G422::cueEngines(RCS& eng, RCS::SIMSTATE sst)
 void G422::simEngines(double& dT, RCS& eng)
 {
 	double fuelMass = GetPropellantMass(asfFuel);
+	VECTOR3 V0 = _V0;
 
 	if (eng.feed & RCS::FUEL_PUMP && (fuelMass < 0.001 || !(eng.feed & RCS::FUEL_OPEN)))
-		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_SYSFEED_RCS] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_SYSFEED_RCS] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 
 	if (eng.feed & RCS::FUEL_PUMP)
 	{
 		if (eng.fuelPrs < 1)
 		{
 			double deltaPrs = 0.22 * dT;
-			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1);
+			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1.0);
 		}
 	}
 	else
@@ -158,12 +159,12 @@ void G422::simEngines(double& dT, RCS& eng)
 		if (eng.fuelPrs > 0)
 		{
 			double deltaPrs = -0.12 * dT;
-			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0);
+			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0.0);
 		}
 	}
 
 	if (fuelMass < 0.001) eng.fuelPrs = 0;
 
 	if (eng.fuelPrs == 0)
-		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_STBYIGN_RCS] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_STBYIGN_RCS] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 }

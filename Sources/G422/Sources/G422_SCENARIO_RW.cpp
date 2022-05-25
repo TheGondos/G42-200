@@ -1,6 +1,7 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_DVC.h"
-#include "..\Headers\G422_MDL_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_DVC.h"
+#include "../Headers/G422_MDL_DVC.h"
+#include <cstring>
 
 void G422::clbkLoadStateEx(FILEHANDLE scn, void* status)
 {
@@ -208,7 +209,8 @@ void VCSwitch::setLoadState(char& cs, VESSEL4* vessel)
 	case 'v': setPos(SW2_DOWN, vessel); break;
 	}
 
-	vessel->clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (G422::vcSwitchIndexByMGID[mgid] & 0xFFFF), PANEL_MOUSE_IGNORE, _V0);
+	VECTOR3 V0 = _V0;
+	vessel->clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (G422::vcSwitchIndexByMGID[mgid] & 0xFFFF), PANEL_MOUSE_IGNORE, V0);
 }
 
 char VCKnob::getSaveState()
@@ -236,7 +238,8 @@ void VCKnob::setLoadState(char& cs, VESSEL4* vessel)
 	case 'v': setPos(KB2_DOWN, vessel); break;
 	}
 
-	vessel->clbkVCMouseEvent((VC_CTRLSET_KNOBS << 16) | (G422::vcKnobIndexByMGID[mgid] & 0xFFFF), PANEL_MOUSE_IGNORE, _V0);
+	VECTOR3 V0 = _V0;
+	vessel->clbkVCMouseEvent((VC_CTRLSET_KNOBS << 16) | (G422::vcKnobIndexByMGID[mgid] & 0xFFFF), PANEL_MOUSE_IGNORE, V0);
 }
 
 // this helps make things less ugly

@@ -1,6 +1,7 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_DVC.h"
-#include "..\Headers\G422_MDL_EXT.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_DVC.h"
+#include "../Headers/G422_MDL_EXT.h"
+#include <cstring>
 
 int G422::vesselCount = 0;
 G422::DrawRes G422::drawRes;
@@ -17,7 +18,7 @@ G422::G422(OBJHANDLE hVessel, int fmodel) : VESSEL4 (hVessel, fmodel)
 	if (ucsoInstalled)
 	{
 		sprintf(buffer, "UCSO version: %s", ucsoVersion);
-		message = _strdup(buffer);
+		message = strdup(buffer);
 
 		ucso->SetUnpackingRange(30);
 	}
@@ -400,113 +401,113 @@ void G422::clbkPostCreation()
 	xrSound->SetDefaultSoundEnabled(XRSound::MainEngines, false);
 	xrSound->SetDefaultSoundEnabled(XRSound::HoverEngines, false);
 	xrSound->SetDefaultSoundEnabled(XRSound::RetroEngines, false);
-	xrSound->LoadWav(XRSound::AirConditioning, "Sound/G422/amb.wav", XRSound::InternalOnly);
+	xrSound->LoadWav(XRSound::AirConditioning, "Sound/G422/amb.wav", XRSound::PlaybackType::InternalOnly);
 
-	xrSound->LoadWav(XRSound::RCSAttackPlusX, "Sound/G422/RCSfire.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(XRSound::RCSAttackPlusY, "Sound/G422/RCSfire.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(XRSound::RCSAttackPlusZ, "Sound/G422/RCSfire.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(XRSound::RCSAttackMinusX, "Sound/G422/RCSfire.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(XRSound::RCSAttackMinusY, "Sound/G422/RCSfire.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(XRSound::RCSAttackMinusZ, "Sound/G422/RCSfire.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(XRSound::RCSSustain, "Sound/G422/RCSsustain.wav", XRSound::BothViewClose); 
-	xrSound->LoadWav(XRSound::FlightWind, (visor->pos == 1 ? "Sound/G422/wind_vsr_up.wav" : "Sound/G422/wind_vsr_down.wav"), XRSound::BothViewClose);
+	xrSound->LoadWav(XRSound::RCSAttackPlusX, "Sound/G422/RCSfire.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(XRSound::RCSAttackPlusY, "Sound/G422/RCSfire.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(XRSound::RCSAttackPlusZ, "Sound/G422/RCSfire.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(XRSound::RCSAttackMinusX, "Sound/G422/RCSfire.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(XRSound::RCSAttackMinusY, "Sound/G422/RCSfire.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(XRSound::RCSAttackMinusZ, "Sound/G422/RCSfire.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(XRSound::RCSSustain, "Sound/G422/RCSsustain.wav", XRSound::PlaybackType::BothViewClose); 
+	xrSound->LoadWav(XRSound::FlightWind, (visor->pos == 1 ? "Sound/G422/wind_vsr_up.wav" : "Sound/G422/wind_vsr_down.wav"), XRSound::PlaybackType::BothViewClose);
 
-	xrSound->LoadWav(SFX_ENGINESTART_LMAIN_EXT, "Sound/G422/main_start_gen.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINESTART_RMAIN_EXT, "Sound/G422/main_start_gen.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINESTART_LMAIN_INT, "Sound/G422/main_start_rct.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINESTART_RMAIN_INT, "Sound/G422/main_start_rct.wav", XRSound::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTART_LMAIN_EXT, "Sound/G422/main_start_gen.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTART_RMAIN_EXT, "Sound/G422/main_start_gen.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTART_LMAIN_INT, "Sound/G422/main_start_rct.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTART_RMAIN_INT, "Sound/G422/main_start_rct.wav", XRSound::PlaybackType::BothViewMedium);
 
-	xrSound->LoadWav(SFX_ENGINERUN_LMAIN_EXT, "Sound/G422/main_run_gen.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINERUN_RMAIN_EXT, "Sound/G422/main_run_gen.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINERUN_LMAIN_INT, "Sound/G422/main_run_rct.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINERUN_RMAIN_INT, "Sound/G422/main_run_rct.wav", XRSound::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINERUN_LMAIN_EXT, "Sound/G422/main_run_gen.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINERUN_RMAIN_EXT, "Sound/G422/main_run_gen.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINERUN_LMAIN_INT, "Sound/G422/main_run_rct.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINERUN_RMAIN_INT, "Sound/G422/main_run_rct.wav", XRSound::PlaybackType::BothViewMedium);
 
-	xrSound->LoadWav(SFX_LMAIN_JETROAR, "Sound/G422/roar.wav", XRSound::BothViewFar);
-	xrSound->LoadWav(SFX_RMAIN_JETROAR, "Sound/G422/roar.wav", XRSound::BothViewFar);
-	xrSound->LoadWav(SFX_LMAIN_BURNER, "Sound/G422/afterburner.wav", XRSound::BothViewFar);
-	xrSound->LoadWav(SFX_RMAIN_BURNER, "Sound/G422/afterburner.wav", XRSound::BothViewFar);
-	xrSound->LoadWav(SFX_LMAIN_RCTROAR, "Sound/G422/main_burn_rct.wav", XRSound::BothViewFar);
-	xrSound->LoadWav(SFX_RMAIN_RCTROAR, "Sound/G422/main_burn_rct.wav", XRSound::BothViewFar);
+	xrSound->LoadWav(SFX_LMAIN_JETROAR, "Sound/G422/roar.wav", XRSound::PlaybackType::BothViewFar);
+	xrSound->LoadWav(SFX_RMAIN_JETROAR, "Sound/G422/roar.wav", XRSound::PlaybackType::BothViewFar);
+	xrSound->LoadWav(SFX_LMAIN_BURNER, "Sound/G422/afterburner.wav", XRSound::PlaybackType::BothViewFar);
+	xrSound->LoadWav(SFX_RMAIN_BURNER, "Sound/G422/afterburner.wav", XRSound::PlaybackType::BothViewFar);
+	xrSound->LoadWav(SFX_LMAIN_RCTROAR, "Sound/G422/main_burn_rct.wav", XRSound::PlaybackType::BothViewFar);
+	xrSound->LoadWav(SFX_RMAIN_RCTROAR, "Sound/G422/main_burn_rct.wav", XRSound::PlaybackType::BothViewFar);
 
-	xrSound->LoadWav(SFX_ENGINESTOP_LMAIN_EXT, "Sound/G422/main_stop_gen.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINESTOP_RMAIN_EXT, "Sound/G422/main_stop_gen.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINESTOP_LMAIN_INT, "Sound/G422/main_stop_rct.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINESTOP_RMAIN_INT, "Sound/G422/main_stop_rct.wav", XRSound::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTOP_LMAIN_EXT, "Sound/G422/main_stop_gen.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTOP_RMAIN_EXT, "Sound/G422/main_stop_gen.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTOP_LMAIN_INT, "Sound/G422/main_stop_rct.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINESTOP_RMAIN_INT, "Sound/G422/main_stop_rct.wav", XRSound::PlaybackType::BothViewMedium);
 
-	xrSound->LoadWav(SFX_RAMCASTER_START, "Sound/G422/ramcaster_engage_nmnl.wav", XRSound::BothViewMedium);	
-	xrSound->LoadWav(SFX_ENGINERUN_RAMX_LO, "Sound/G422/ramcaster_run_lo.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_RAMCASTER_TRST_UP, "Sound/G422/ramcaster_switch_up.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_ENGINERUN_RAMX_HI, "Sound/G422/ramcaster_run_hi.wav", XRSound::BothViewMedium);	
+	xrSound->LoadWav(SFX_RAMCASTER_START, "Sound/G422/ramcaster_engage_nmnl.wav", XRSound::PlaybackType::BothViewMedium);	
+	xrSound->LoadWav(SFX_ENGINERUN_RAMX_LO, "Sound/G422/ramcaster_run_lo.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_RAMCASTER_TRST_UP, "Sound/G422/ramcaster_switch_up.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_ENGINERUN_RAMX_HI, "Sound/G422/ramcaster_run_hi.wav", XRSound::PlaybackType::BothViewMedium);	
 
-	xrSound->LoadWav(SFX_RAMXBURN, "Sound/G422/ramcaster_dry.wav", XRSound::BothViewMedium);
-	xrSound->LoadWav(SFX_OMSBURN, "Sound/G422/oms_burn.wav", XRSound::BothViewFar);
+	xrSound->LoadWav(SFX_RAMXBURN, "Sound/G422/ramcaster_dry.wav", XRSound::PlaybackType::BothViewMedium);
+	xrSound->LoadWav(SFX_OMSBURN, "Sound/G422/oms_burn.wav", XRSound::PlaybackType::BothViewFar);
 
-	xrSound->LoadWav(SFX_LAPU_START, "Sound/G422/apu_start.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_LAPU_RUN, "Sound/G422/apu_run.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_LAPU_STOP, "Sound/G422/apu_stop.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_RAPU_START, "Sound/G422/apu_start.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_RAPU_RUN, "Sound/G422/apu_run.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_RAPU_STOP, "Sound/G422/apu_stop.wav", XRSound::BothViewClose);
+	xrSound->LoadWav(SFX_LAPU_START, "Sound/G422/apu_start.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_LAPU_RUN, "Sound/G422/apu_run.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_LAPU_STOP, "Sound/G422/apu_stop.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_RAPU_START, "Sound/G422/apu_start.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_RAPU_RUN, "Sound/G422/apu_run.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_RAPU_STOP, "Sound/G422/apu_stop.wav", XRSound::PlaybackType::BothViewClose);
 
-	xrSound->LoadWav(SFX_FUELPUMP_MAIN, "Sound/G422/fuelpump_main.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_FUELPUMP_OXY, "Sound/G422/fuelpump_oxy.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_FUELPUMP_RAMX, "Sound/G422/fuelpump_ramx.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_FUELPUMP_APU, "Sound/G422/fuelpump_apu.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_FUELPUMP_RCS, "Sound/G422/fuelpump_rcs.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_FUELPUMP_OMS, "Sound/G422/fuelpump_oms.wav", XRSound::InternalOnly);	
+	xrSound->LoadWav(SFX_FUELPUMP_MAIN, "Sound/G422/fuelpump_main.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_FUELPUMP_OXY, "Sound/G422/fuelpump_oxy.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_FUELPUMP_RAMX, "Sound/G422/fuelpump_ramx.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_FUELPUMP_APU, "Sound/G422/fuelpump_apu.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_FUELPUMP_RCS, "Sound/G422/fuelpump_rcs.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_FUELPUMP_OMS, "Sound/G422/fuelpump_oms.wav", XRSound::PlaybackType::InternalOnly);	
 
-	xrSound->LoadWav(SFX_LDG_GEAR, "Sound/G422/landing_gear.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_CNRDS, "Sound/G422/canards.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_VSRUP, "Sound/G422/visor_raise.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_VSRDN, "Sound/G422/visor_lower.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_HYDRAULICS, "XRSound/Default/Hydraulics1.wav", XRSound::BothViewClose);
-	xrSound->LoadWav(SFX_WINGMTR, "Sound/G422/wing_motor.wav", XRSound::BothViewClose);
+	xrSound->LoadWav(SFX_LDG_GEAR, "Sound/G422/landing_gear.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_CNRDS, "Sound/G422/canards.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_VSRUP, "Sound/G422/visor_raise.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_VSRDN, "Sound/G422/visor_lower.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_HYDRAULICS, "XRSound/Default/Hydraulics1.wav", XRSound::PlaybackType::BothViewClose);
+	xrSound->LoadWav(SFX_WINGMTR, "Sound/G422/wing_motor.wav", XRSound::PlaybackType::BothViewClose);
 
-	xrSound->LoadWav(SFX_VC_POP, "Sound/G422/cockpit/pop.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_VC_FLICK, "Sound/G422/cockpit/flick.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_VC_AFLIK, "Sound/G422/cockpit/auto_flipback.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_VC_BEEP, "Sound/G422/cockpit/beep.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_VC_BLIP, "Sound/G422/cockpit/blip.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_VC_CLAK, "Sound/G422/cockpit/clamp.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_VC_TICK, "Sound/G422/cockpit/tick.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_VC_SLACK, "Sound/G422/cockpit/shclack.wav", XRSound::InternalOnly);	
+	xrSound->LoadWav(SFX_VC_POP, "Sound/G422/cockpit/pop.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_VC_FLICK, "Sound/G422/cockpit/flick.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_VC_AFLIK, "Sound/G422/cockpit/auto_flipback.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_VC_BEEP, "Sound/G422/cockpit/beep.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_VC_BLIP, "Sound/G422/cockpit/blip.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_VC_CLAK, "Sound/G422/cockpit/clamp.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_VC_TICK, "Sound/G422/cockpit/tick.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_VC_SLACK, "Sound/G422/cockpit/shclack.wav", XRSound::PlaybackType::InternalOnly);	
 
-	xrSound->LoadWav(SFX_AP_ON, "XRSound/Default/Autopilot On.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_AP_OFF, "XRSound/Default/Autopilot Off.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_RCS_NORMAL, "XRSound/Default/RCS Config Normal.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_RCS_DOCKING, "XRSound/Default/RCS Config Docking.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_FUEL_DUMP, "XRSound/Default/Warning Fuel Dump.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_FUEL_FLOW, "XRSound/Default/Fuel Flow.wav", XRSound::InternalOnly);
+	xrSound->LoadWav(SFX_AP_ON, "XRSound/Default/Autopilot On.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_AP_OFF, "XRSound/Default/Autopilot Off.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_RCS_NORMAL, "XRSound/Default/RCS Config Normal.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_RCS_DOCKING, "XRSound/Default/RCS Config Docking.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_FUEL_DUMP, "XRSound/Default/Warning Fuel Dump.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_FUEL_FLOW, "XRSound/Default/Fuel Flow.wav", XRSound::PlaybackType::InternalOnly);
 
-	xrSound->LoadWav(SFX_WARN_MAINLOW, "XRSound/Default/Warning Main Fuel Low.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_OXYLOW, "XRSound/Default/Warning Oxygen Low.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_ASFLOW, "XRSound/Default/Warning APU Fuel Low.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_MAINDEP, "XRSound/Default/Warning Main Fuel Depleted.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_OXYDEP, "XRSound/Default/Warning Oxygen Depleted.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_ASFDEP, "XRSound/Default/Warning APU Fuel Depleted No Hydraulic Pressure.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_APUOFF, "XRSound/Default/APU Offline.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_CTRLOFF, "XRSound/Default/Warning AF Ctrl Surfaces Off.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_GEARUP, "XRSound/Default/Warning Gear is Up.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_WARN_RESET, "XRSound/Default/System Reset.wav", XRSound::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_MAINLOW, "XRSound/Default/Warning Main Fuel Low.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_OXYLOW, "XRSound/Default/Warning Oxygen Low.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_ASFLOW, "XRSound/Default/Warning APU Fuel Low.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_MAINDEP, "XRSound/Default/Warning Main Fuel Depleted.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_OXYDEP, "XRSound/Default/Warning Oxygen Depleted.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_ASFDEP, "XRSound/Default/Warning APU Fuel Depleted No Hydraulic Pressure.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_APUOFF, "XRSound/Default/APU Offline.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_CTRLOFF, "XRSound/Default/Warning AF Ctrl Surfaces Off.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_GEARUP, "XRSound/Default/Warning Gear is Up.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_WARN_RESET, "XRSound/Default/System Reset.wav", XRSound::PlaybackType::InternalOnly);
 
-	xrSound->LoadWav(SFX_INFO_MAINFULL, "XRSound/Default/Main Fuel Tanks Full.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_OXYFULL, "XRSound/Default/LOX Tanks Full.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_ASFFULL, "XRSound/Default/APU Fuel Tanks Full.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_V1, "XRSound/Default/V1.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_ROTATE, "XRSound/Default/Rotate.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_GEARUP, "XRSound/Default/Gear Up.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_GEARUPLOCK, "XRSound/Default/Gear Up and Locked.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_GEARDN, "XRSound/Default/Gear Down.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_INFO_GEARDNLOCK, "XRSound/Default/Gear Down and Locked.wav", XRSound::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_MAINFULL, "XRSound/Default/Main Fuel Tanks Full.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_OXYFULL, "XRSound/Default/LOX Tanks Full.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_ASFFULL, "XRSound/Default/APU Fuel Tanks Full.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_V1, "XRSound/Default/V1.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_ROTATE, "XRSound/Default/Rotate.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_GEARUP, "XRSound/Default/Gear Up.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_GEARUPLOCK, "XRSound/Default/Gear Up and Locked.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_GEARDN, "XRSound/Default/Gear Down.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_INFO_GEARDNLOCK, "XRSound/Default/Gear Down and Locked.wav", XRSound::PlaybackType::InternalOnly);
 
-	xrSound->LoadWav(SFX_BAY_DOORS_CLOSED, "XRSound/Default/Bay Doors Are Closed.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_BAY_SLOT_EMPTY, "XRSound/Default/Slot is Empty.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_BAY_SLOT_OCCUPIED, "XRSound/Default/Slot Is Full.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_BAY_RELEASED, "XRSound/Default/Cargo Deployed.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_BAY_RELEASE_FAILED, "XRSound/Default/Cargo Deployment Failed.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_BAY_GRAPPLED, "XRSound/Default/Cargo Latched In Bay.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_BAY_GRAPPLE_NORANGE, "XRSound/Default/No Cargo in Grapple Range.wav", XRSound::InternalOnly);
-	xrSound->LoadWav(SFX_BAY_GRAPPLE_FAILED, "XRSound/Default/Auto-Grapple Failed.wav", XRSound::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_DOORS_CLOSED, "XRSound/Default/Bay Doors Are Closed.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_SLOT_EMPTY, "XRSound/Default/Slot is Empty.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_SLOT_OCCUPIED, "XRSound/Default/Slot Is Full.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_RELEASED, "XRSound/Default/Cargo Deployed.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_RELEASE_FAILED, "XRSound/Default/Cargo Deployment Failed.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_GRAPPLED, "XRSound/Default/Cargo Latched In Bay.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_GRAPPLE_NORANGE, "XRSound/Default/No Cargo in Grapple Range.wav", XRSound::PlaybackType::InternalOnly);
+	xrSound->LoadWav(SFX_BAY_GRAPPLE_FAILED, "XRSound/Default/Auto-Grapple Failed.wav", XRSound::PlaybackType::InternalOnly);
 	
 	oapiVCTriggerRedrawArea(-1, VC_AREA_MFDKEYS);
 	oapiVCTriggerRedrawArea(-1, VC_AREA_EICAS_ALL);

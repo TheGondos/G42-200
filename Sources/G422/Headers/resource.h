@@ -1,7 +1,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by G422.rc
-#define BMP_RHTTAPE                     101
-#define BMP_EICAS_SRC                   105
+#define BMP_RHTTAPE                     "Bitmaps/G422/reheat_tape.bmp"
+#define BMP_EICAS_SRC                   "Bitmaps/G422/VC_EICAS_SRC.bmp"
 
 // Next default values for new objects
 #ifdef APSTUDIO_INVOKED

@@ -1,6 +1,7 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_MDL_DVC.h"
-#include "..\Headers\G422_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_MDL_DVC.h"
+#include "../Headers/G422_DVC.h"
+#include <cstring>
 
 void G422::clbkRCSMode(int mode)
 {
@@ -26,8 +27,8 @@ void G422::clbkNavMode(int mode, bool active) { if (active) apSet = false; }
 
 bool G422::clbkVCMouseEvent(int id, int ev, VECTOR3& p)
 {
-	int ctrlSet = HIWORD(id);
-	int ctrlID = LOWORD(id);
+	int ctrlSet = (id>>16) & 0xffff;
+	int ctrlID = (id) & 0xffff;
 
 	switch (ctrlSet)
 	{
@@ -650,8 +651,8 @@ bool G422::clbkVCMouseEvent(int id, int ev, VECTOR3& p)
 			break;
 
 		case HUD_BRT_BUTTON:
-			if(ev & PANEL_MOUSE_RBDOWN) oapiSetHUDIntensity(min(oapiGetHUDIntensity() + 0.1, 1));
-			else oapiSetHUDIntensity(max(oapiGetHUDIntensity() - 0.1, 0));
+			if(ev & PANEL_MOUSE_RBDOWN) oapiSetHUDIntensity(min(oapiGetHUDIntensity() + 0.1, 1.0));
+			else oapiSetHUDIntensity(max(oapiGetHUDIntensity() - 0.1, 0.0));
 			break;
 		case HUD_CLR_BUTTON:
 			oapiToggleHUDColour();
@@ -865,7 +866,7 @@ int G422::clbkConsumeDirectKey(char* kstate)
 	return false;
 }
 
-int G422::clbkConsumeBufferedKey(DWORD key, bool down, char* kstate)
+int G422::clbkConsumeBufferedKey(int key, bool down, char* kstate)
 {
 	if (!down) return 0;
 
@@ -1014,7 +1015,7 @@ int G422::clbkConsumeBufferedKey(DWORD key, bool down, char* kstate)
 				if (drainedMass > 0)
 				{
 					sprintf(buffer, "Success: Drained %d kilograms of fuel.", int(round(drainedMass)));
-					message = _strdup(buffer);
+					message = strdup(buffer);
 				}
 				else message = "Error: Couldn't drain fuel.";
 
@@ -1049,6 +1050,7 @@ int G422::clbkConsumeBufferedKey(DWORD key, bool down, char* kstate)
 		}
 		else
 		{
+		VECTOR3 V0 = _V0;
 		switch (key)
 		{
 		case OAPI_KEY_E:
@@ -1058,38 +1060,38 @@ int G422::clbkConsumeBufferedKey(DWORD key, bool down, char* kstate)
 
 			if (engMainL.state == RT66::SST_RUN_EXT || engMainL.state == RT66::SST_RUN_INT)
 			{
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, _V0);
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, _V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, V0);
 			}
 			else
 			{
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, _V0);
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, _V0);
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_LBUP, _V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (leftIgnIndex & 0xFFFF), PANEL_MOUSE_LBUP, V0);
 			}
 
 			if (engMainR.state == RT66::SST_RUN_EXT || engMainR.state == RT66::SST_RUN_INT)
 			{
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, _V0);
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, _V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_RBDOWN, V0);
 			}
 			else
 			{
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, _V0);
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, _V0);
-				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_LBUP, _V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_LBDOWN, V0);
+				clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (rightIgnIndex & 0xFFFF), PANEL_MOUSE_LBUP, V0);
 			}
 
 			return 1;
 		}
 		case OAPI_KEY_B:
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_EMAINL_REHEAT] & 0xFFFF), engMainL.burnerToggle ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN, _V0);
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_EMAINR_REHEAT] & 0xFFFF), engMainR.burnerToggle ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_EMAINL_REHEAT] & 0xFFFF), engMainL.burnerToggle ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN, V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_EMAINR_REHEAT] & 0xFFFF), engMainR.burnerToggle ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN, V0);
 
 			return 1;
 
 		case OAPI_KEY_P:
-			clbkVCMouseEvent((VC_CTRLSET_PRK_BRK_HNDL << 16), parkingBrakeMode ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_PRK_BRK_HNDL << 16), parkingBrakeMode ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN, V0);
 			return 1;
 
 		case OAPI_KEY_C:
@@ -1126,35 +1128,36 @@ int G422::clbkConsumeBufferedKey(DWORD key, bool down, char* kstate)
 			}
 		}
 
+		VECTOR3 V0 = _V0;
 		switch (key)
 		{
 		case OAPI_KEY_G:
 		{
 			// Landing gear is reversed
 			int mouseEvent = landingGear->getToggleState() ? PANEL_MOUSE_LBDOWN : PANEL_MOUSE_RBDOWN;
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_GEAR] & 0xFFFF), mouseEvent, _V0);
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_GEAR] & 0xFFFF), mouseEvent, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_GEAR] & 0xFFFF), mouseEvent, V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_GEAR] & 0xFFFF), mouseEvent, V0);
 			return 1;
 		}
 		case OAPI_KEY_V:
 		{
 			int mouseEvent = visor->getToggleState() ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN;
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_VISOR] & 0xFFFF), mouseEvent, _V0);
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_VISOR] & 0xFFFF), mouseEvent, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_VISOR] & 0xFFFF), mouseEvent, V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_VISOR] & 0xFFFF), mouseEvent, V0);
 			return 1;
 		}
 		case OAPI_KEY_N:
 		{
 			int mouseEvent = canards->getToggleState() ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN;
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_CANARD] & 0xFFFF), mouseEvent, _V0);
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_CANARD] & 0xFFFF), mouseEvent, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_CANARD] & 0xFFFF), mouseEvent, V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_CANARD] & 0xFFFF), mouseEvent, V0);
 			return 1;
 		}
 		case OAPI_KEY_B:
 		{
 			int mouseEvent = bayDoors->getToggleState() ? PANEL_MOUSE_RBDOWN : PANEL_MOUSE_LBDOWN;
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_BAY_OPENCLSE] & 0xFFFF), mouseEvent, _V0);
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_BAY_OPENCLSE] & 0xFFFF), mouseEvent, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_BAY_OPENCLSE] & 0xFFFF), mouseEvent, V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_BAY_OPENCLSE] & 0xFFFF), mouseEvent, V0);
 			return 1;
 		}
 		case OAPI_KEY_TAB:

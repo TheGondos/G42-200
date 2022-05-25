@@ -1,5 +1,5 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_MDL_EXT.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_MDL_EXT.h"
 
 void G422::cueEngines(RT66& eng, RT66::SIMSTATE sst)
 {
@@ -111,7 +111,7 @@ void G422::simEngines(double& dT, RT66& eng)
 		if (eng.fuelPrs < 1)
 		{
 			double deltaPrs = 0.22 * dT;
-			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1);
+			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1.0);
 		}
 	}
 	else
@@ -119,7 +119,7 @@ void G422::simEngines(double& dT, RT66& eng)
 		if (eng.fuelPrs > 0)
 		{
 			double deltaPrs = -0.12 * (1 - eng.genPct * 0.5) * dT;
-			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0);
+			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0.0);
 		}
 	}
 
@@ -130,7 +130,7 @@ void G422::simEngines(double& dT, RT66& eng)
 		if (eng.oxyPrs < 1)
 		{
 			double deltaPrs = 0.22 * dT;
-			eng.oxyPrs = min(eng.oxyPrs + deltaPrs, 1);
+			eng.oxyPrs = min(eng.oxyPrs + deltaPrs, 1.0);
 		}
 	}
 	else
@@ -138,7 +138,7 @@ void G422::simEngines(double& dT, RT66& eng)
 		if (eng.oxyPrs > 0)
 		{
 			double deltaPrs = -0.12 * (1 - eng.genPct * .5) * dT;
-			eng.oxyPrs = max(eng.oxyPrs + deltaPrs, 0);
+			eng.oxyPrs = max(eng.oxyPrs + deltaPrs, 0.0);
 		}
 	}
 
@@ -194,7 +194,7 @@ void G422::simEngines(double& dT, RT66& eng)
 
 			if (eng.thr > 1) // burners, engage!
 			{
-				double rhtLvl = max(0, (eng.thr - 1) * 5.0);
+				double rhtLvl = max(0.0, (eng.thr - 1) * 5.0);
 				SetThrusterLevel(eng.burnerThr, rhtLvl);
 				playSound(eng.burnerSFX, true, float(rhtLvl * burnerEngMode));
 
@@ -231,7 +231,7 @@ void G422::simEngines(double& dT, RT66& eng)
 
 		// not quite sure how or why this works.... got to it by tweaking around with plot-o-matic...
 		double alt = GetAltitude() * .00001;
-		eng.contrailLevel = max(0, ((alt - 0.028) * alt) * ((0.18 - alt) * 300.0) * eng.epr);
+		eng.contrailLevel = max(0.0, ((alt - 0.028) * alt) * ((0.18 - alt) * 300.0) * eng.epr);
 	}
 	return;
 
@@ -282,7 +282,7 @@ void G422::simEngines(double& dT, RT66& eng)
 		else flowRate = GetPropellantFlowrate(allMainFuel);
 
 		// we've halved the propellant flowrate (wrt the legacy model) since now this bit runs for each of the two engines
-		SetPropellantMass(oxidizerFuel, max(0, GetPropellantMass(oxidizerFuel) - (flowRate * 0.5 * dT * OXYFUEL_RATIO)));
+		SetPropellantMass(oxidizerFuel, max(0.0, GetPropellantMass(oxidizerFuel) - (flowRate * 0.5 * dT * OXYFUEL_RATIO)));
 	}
 	return;
 

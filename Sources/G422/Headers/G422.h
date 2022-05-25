@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UCSO\Vessel.h>
+#include <UCSO/Vessel.h>
 #include <XRSound.h>
 
 #include <math.h>
@@ -205,7 +205,6 @@ private:
 class G422 : public VESSEL4
 {
 public:
-	static HINSTANCE thisDLL;
 	static map<UINT, int> vcSwitchIndexByMGID;
 	static map<UINT, int> vcKnobIndexByMGID;
 
@@ -351,7 +350,7 @@ public:
 	void clbkNavMode(int mode, bool active);
 	bool clbkVCMouseEvent(int id, int ev, VECTOR3& p);
 	int clbkConsumeDirectKey(char* kstate);
-	int clbkConsumeBufferedKey(DWORD key, bool down, char* kstate);
+	int clbkConsumeBufferedKey(int key, bool down, char* kstate);
 
 	// VESSEL UPDATE
 	void clbkPreStep(double simt, double simdt, double mjd);

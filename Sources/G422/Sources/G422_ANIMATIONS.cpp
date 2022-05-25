@@ -1,6 +1,6 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_MDL_EXT.h"
-#include "..\Headers\G422_MDL_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_MDL_EXT.h"
+#include "../Headers/G422_MDL_DVC.h"
 
 // gears...
 #define V3_GEAR_HATCH_R _V(2.3561, -2.37101, -4.12656)

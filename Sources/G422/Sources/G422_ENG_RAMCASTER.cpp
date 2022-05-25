@@ -1,6 +1,6 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_DVC.h"
-#include "..\Headers\G422_MDL_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_DVC.h"
+#include "../Headers/G422_MDL_DVC.h"
 
 void G422::cueEngines(RAMCASTER& eng, RAMCASTER::SIMSTATE sst)
 {
@@ -57,15 +57,17 @@ void G422::simEngines(double& dT, RAMCASTER& eng)
 	double fuelMass = GetPropellantMass(allMainFuel);
 
 	if (eng.feed & RAMCASTER::FUEL_PUMP && (fuelMass < 0.001 || !(eng.feed & RAMCASTER::FUEL_OPEN) || 
-		(apuPackA.pwrPct < 0.85 && apuPackB.pwrPct < 0.85)))
-		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_APU_RAMX] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+		(apuPackA.pwrPct < 0.85 && apuPackB.pwrPct < 0.85))) {
+		VECTOR3 V0 = _V0;
+		clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_APU_RAMX] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
+	}
 
 	if (eng.feed & RAMCASTER::FUEL_PUMP) // simulate fuel line pressure from pumps
 	{
 		if (eng.fuelPrs < 1)
 		{
 			double deltaPrs = 0.22 * dT;
-			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1);
+			eng.fuelPrs = min(eng.fuelPrs + deltaPrs, 1.0);
 		}
 	}
 	else
@@ -73,7 +75,7 @@ void G422::simEngines(double& dT, RAMCASTER& eng)
 		if (eng.fuelPrs > 0)
 		{
 			double deltaPrs = -0.12 * (1 - eng.thr * 0.5) * dT;
-			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0);
+			eng.fuelPrs = max(eng.fuelPrs + deltaPrs, 0.0);
 		}
 	}
 

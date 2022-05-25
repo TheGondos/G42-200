@@ -1,6 +1,6 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_MDL_DVC.h"
-#include "..\Headers\G422_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_MDL_DVC.h"
+#include "../Headers/G422_DVC.h"
 
 // these are defined up front so we can automate their setup
 VCSwitchDef G422::vcSwitchDefs[VC_SWITCH_COUNT] =
@@ -154,10 +154,12 @@ bool G422::clbkLoadVC(int id)
 	oapiVCRegisterMFD(MFD_USER3, &mfds_5);
 	oapiVCRegisterMFD(MFD_USER4, &mfds_6);
 
-	HBITMAP loadSurfBmp = LoadBitmap(thisDLL, MAKEINTRESOURCE(BMP_EICAS_SRC));
+	vcEicasRes = oapiLoadTexture(BMP_EICAS_SRC);
 
-	if (!loadSurfBmp) MessageBox(GetTopWindow(NULL), "Load EicasSrc Bitmap FAIL!", "FAIL!", MB_ICONERROR | MB_OK);
-	vcEicasRes = oapiCreateSurface(loadSurfBmp);
+	if (!vcEicasRes) {
+		fprintf(stderr, "Load EicasSrc Bitmap FAIL!\n");
+		exit(EXIT_FAILURE);
+	}
 
 	static const VECTOR3 mfdKeyPositions[72] = 
 	{

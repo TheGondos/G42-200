@@ -1,7 +1,8 @@
-#include "..\Headers\G422.h"
-#include "..\Headers\G422_DVC.h"
-#include "..\Headers\G422_MDL_EXT.h"
-#include "..\Headers\G422_MDL_DVC.h"
+#include "../Headers/G422.h"
+#include "../Headers/G422_DVC.h"
+#include "../Headers/G422_MDL_EXT.h"
+#include "../Headers/G422_MDL_DVC.h"
+#include <cstring>
 
 void MovingPart::operate(double& dt)
 {
@@ -71,6 +72,7 @@ void MovingPart::operate(double& dt)
 
 void G422::simSystems(double& dT, int sysid)
 {
+	VECTOR3 V0 = _V0;
 	switch (sysid)
 	{
 	case G422::SYSID_HYDS:
@@ -90,21 +92,21 @@ void G422::simSystems(double& dT, int sysid)
 		else if (brakesReset) { SetMaxWheelbrakeForce(8e5); brakesReset = false; }
 
 		if (apuPackA.state != APU::ENG_RUN && apuPackB.state != APU::ENG_RUN && apuPackA.hydFeed == APU::HYD_PUMP)
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_APU_HYD] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_APU_HYD] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 		break;
 
 	case G422::SYSID_MAINPMP:
 		if (engMainL.feed & RT66::FUEL_PUMP && (GetPropellantMass(allMainFuel) < 0.001 || !(engMainL.feed & RT66::FUEL_OPEN)))
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_MSFEED_L] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_MSFEED_L] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 
 		if (engMainL.feed & RT66::OXY_PUMP && (GetPropellantMass(oxidizerFuel) < 0.001 || !(engMainL.feed & RT66::OXY_OPEN)))
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_OXYFEED_L] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_OXYFEED_L] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 
 		if (engMainR.feed & RT66::FUEL_PUMP && (GetPropellantMass(allMainFuel) < 0.001 || !(engMainR.feed & RT66::FUEL_OPEN)))
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_MSFEED_R] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_MSFEED_R] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 
 		if (engMainR.feed & RT66::OXY_PUMP && (GetPropellantMass(oxidizerFuel) < 0.001 || !(engMainR.feed & RT66::OXY_OPEN)))
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_OXYFEED_R] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW3_OXYFEED_R] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 		break;
 
 	case G422::SYSID_FUELDMP:
@@ -146,7 +148,7 @@ void G422::simSystems(double& dT, int sysid)
 		{
 			stopSound(SFX_FUEL_FLOW);
 			fuelDump.dumpingFuel = false;
-			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_MASTER_DUMP] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_MASTER_DUMP] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 		}
 		break;
 
@@ -161,9 +163,9 @@ void G422::simSystems(double& dT, int sysid)
 				else
 				{
 					SetPropellantMass(allMainFuel, MAXFUEL_MAIN_ALL);
-					clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_FUEL] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+					clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_FUEL] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 				}
-			}  else clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_FUEL] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			}  else clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_FUEL] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 		}
 
 		if (dockSupply.supplyOxy)
@@ -176,9 +178,9 @@ void G422::simSystems(double& dT, int sysid)
 				else
 				{
 					SetPropellantMass(oxidizerFuel, MAXFUEL_OXY);
-					clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_OXY] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+					clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_OXY] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 				}
-			}  else clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_OXY] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			}  else clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_OXY] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 		}
 
 		if (dockSupply.supplyAsf)
@@ -191,9 +193,9 @@ void G422::simSystems(double& dT, int sysid)
 				else
 				{
 					SetPropellantMass(asfFuel, MAXFUEL_ASF);
-					clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_ASF] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+					clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_ASF] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 				}
-			}  else clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_ASF] & 0xFFFF), PANEL_MOUSE_RBPRESSED, _V0);
+			}  else clbkVCMouseEvent((VC_CTRLSET_SWITCHES << 16) | (vcSwitchIndexByMGID[MGID_SW2_DCKSPL_ASF] & 0xFFFF), PANEL_MOUSE_RBPRESSED, V0);
 		}
 
 		if (dockSupply.supplyFuel || dockSupply.supplyOxy || dockSupply.supplyAsf) playSound(SFX_FUEL_FLOW);
@@ -520,8 +522,8 @@ int G422::clbkGeneric(int msgid, int prm, void* context)
 		case G422::SYSID_VISR:
 			if (context)
 			{
-				if (visor->pos == 1) { xrSound->LoadWav(XRSound::FlightWind, "Sound/G422/wind_vsr_up.wav", XRSound::BothViewClose); setSwMid(MGID_SW3_VISOR); }
-				else if (visor->pos == 0) { xrSound->LoadWav(XRSound::FlightWind, "Sound/G422/wind_vsr_down.wav", XRSound::BothViewClose); setSwMid(MGID_SW3_VISOR); }
+				if (visor->pos == 1) { xrSound->LoadWav(XRSound::FlightWind, "Sound/G422/wind_vsr_up.wav", XRSound::PlaybackType::BothViewClose); setSwMid(MGID_SW3_VISOR); }
+				else if (visor->pos == 0) { xrSound->LoadWav(XRSound::FlightWind, "Sound/G422/wind_vsr_down.wav", XRSound::PlaybackType::BothViewClose); setSwMid(MGID_SW3_VISOR); }
 			}
 
 			return 1;
