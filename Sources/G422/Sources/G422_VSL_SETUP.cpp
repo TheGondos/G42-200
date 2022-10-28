@@ -90,8 +90,6 @@ G422::~G422()
 		oapiReleaseBrush(drawRes.brSet[1]);
 		oapiReleaseBrush(drawRes.brSet[2]);
 		oapiReleaseBrush(drawRes.brSet[3]);
-		
-		oapiDestroySurface(drawRes.bmpRes[0]);
 	}
 }
 

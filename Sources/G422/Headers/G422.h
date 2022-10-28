@@ -366,8 +366,6 @@ private:
 	{
 		bool def;
 
-		SURFHANDLE bmpRes[1];
-
 		oapi::Font* mfdLabelsFont;
 
 		oapi::Brush* brSet[8];
